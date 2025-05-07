@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="icon.png?v=2">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C Compiler</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.css"/>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0px; background-color: antiquewhite;}
+    .CodeMirror { height: 300px; border: 1px solid #ccc; width: 100%; margin-top: 50px;}
+    #output { margin-top: 10px; white-space: pre-wrap; background: #f4f4f4; padding: 10px; border-radius: 5px; min-height: 50px; box-shadow: 2px 2px 8px black;}
+    button { margin-top: 10px; padding: 10px; cursor: pointer; }
+    #input-container { margin-top: 10px; display: none; }
+    .button {
+      text-decoration: none;
+      float: right;
+      background-color: rgb(46, 255, 4);
+      border-radius: 10px;
+    }
+    .zoom-controls {
+      margin-top: 10px;
+    }
+    .zoom-controls button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #resizer {
+      height: 10px;
+      background: #ccc;
+      cursor: ns-resize;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <a style="text-decoration: none; margin: 0;" href="https://origine-official.netlify.app/">
+    <h2 style="margin-top: 0; margin-left: 5px;">
+        <img style="width: 20px;" src="icon.png" alt=""><i>RIGINE</i>
+    </h2>
+  </a>
+
+  <div style="margin: 20px;">
+    <h2>C Compiler <button onclick="showdiv()" class="button">NOTE</button></h2>
+
+    <div id="display" style="padding: 20px; background-color: coral; margin-top: 30px; border-radius: 10px; box-shadow: 2px 2px 8px black; display: none;">
+      <h4 style="color: white;">In this code compiler, if your code is correct, no errors will be shown. However, if your code is incorrect, an error message will appear in the output.
+      Please note that our compiler does not support sequential output. This means you must enter all required inputs in the input box that appears after you click the "Run" button.
+      Your final output will be displayed after execution.
+      Note: Due to the non-sequential input method, the behavior may differ from traditional compilers. This does <b>not</b> necessarily mean your code is incorrect. your code is saved locally so even if you refresh the page your code will be shown.</h4>
+    </div>
+
+    <script>
+      function showdiv() {
+        var div = document.getElementById("display");
+        div.style.display = (div.style.display === "none" || div.style.display === "") ? "block" : "none";
+      }
+    </script>
+
+    <!-- Zoom In / Out Buttons -->
+    <div class="zoom-controls">
+      <button style="background-color: chartreuse;" onclick="zoomIn()">Zoom In</button>
+      <button style="background-color: chartreuse;" onclick="zoomOut()">Zoom Out</button>
+    </div>
+
+    <div style="box-shadow: 2px 2px 8px black; padding: 0; position: relative;">
+      <textarea id="editor"></textarea>
+      <div id="resizer"></div>
+    </div>
+
+    <button style="float: left;" class="button" onclick="detectScanf()">Run</button>
+
+    <br><br><h3>Output:</h3>
+    <div id="output"></div>
+
+    <div id="input-container">
+      <h3>Enter Input:</h3>
+      <input id="userInput" type="text" placeholder="Enter value..." />
+      <button onclick="submitNextInput()">Submit</button>
+    </div>
+  </div>
+
+  <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+      mode: "text/x-csrc",
+      lineNumbers: true,
+      theme: "default",
+      matchBrackets: true,
+      autoCloseBrackets: "()[]{}''\"\"<>",
+      extraKeys: { "Ctrl-Space": "autocomplete" }
+    });
+
+    // Set default font size
+    let currentFontSize = 14;
+    editor.getWrapperElement().style.fontSize = currentFontSize + "px";
+
+    function zoomIn() {
+      if (currentFontSize < 30) {
+        currentFontSize += 2;
+        editor.getWrapperElement().style.fontSize = currentFontSize + "px";
+        editor.refresh();
+      }
+    }
+
+    function zoomOut() {
+      if (currentFontSize > 8) {
+        currentFontSize -= 2;
+        editor.getWrapperElement().style.fontSize = currentFontSize + "px";
+        editor.refresh();
+      }
+    }
+
+    // Resizing logic
+    const resizer = document.getElementById("resizer");
+    const wrapper = editor.getWrapperElement();
+    let isDragging = false;
+
+    resizer.addEventListener("mousedown", function(e) {
+      isDragging = true;
+      document.body.style.cursor = "ns-resize";
+    });
+
+    window.addEventListener("mousemove", function(e) {
+      if (!isDragging) return;
+      const newHeight = e.clientY - wrapper.getBoundingClientRect().top;
+      if (newHeight > 100 && newHeight < window.innerHeight - 100) {
+        wrapper.style.height = newHeight + "px";
+        editor.refresh();
+      }
+    });
+
+    window.addEventListener("mouseup", function() {
+      isDragging = false;
+      document.body.style.cursor = "default";
+    });
+
+    // Load saved code and output from localStorage
+    window.onload = function() {
+      const savedCode = localStorage.getItem("savedCode");
+      const savedOutput = localStorage.getItem("savedOutput");
+      if (savedCode) {
+        editor.setValue(savedCode);
+      }
+      if (savedOutput) {
+        document.getElementById("output").innerHTML = savedOutput;
+      }
+    };
+
+    const cKeywords = [
+      "int", "float", "char", "double", "void", "return", "main()",
+      "if", "else", "while", "for", "do", "switch", "case", "default", "break;", "continue;",
+      "printf", "scanf", "gets", "puts", "sizeof", "struct", "typedef", "enum", "union",
+      "#include<math.h>", "#include<stdio.h>", "#include<stdlib.h>", "const", "static", "extern", "volatile", "register", "goto"
+    ];
+
+    CodeMirror.registerHelper("hint", "c", function(editor) {
+      var cur = editor.getCursor();
+      var token = editor.getTokenAt(cur);
+      var start = token.start;
+      var end = token.end;
+      var word = token.string;
+      var list = cKeywords.filter(function(item) {
+        return item.startsWith(word);
+      });
+      return {
+        list: list,
+        from: CodeMirror.Pos(cur.line, start),
+        to: CodeMirror.Pos(cur.line, end)
+      };
+    });
+
+    editor.on("inputRead", function(cm, event) {
+      if (!cm.state.completionActive && event.text[0].match(/\w/)) {
+        cm.showHint({ hint: CodeMirror.hint.c });
+      }
+    });
+
+    let inputQueue = [];
+
+    function detectScanf() {
+      let code = editor.getValue();
+      localStorage.setItem("savedCode", code);
+      let matches = code.match(/scanf\s*\(\s*"[^"]*"\s*,\s*&[^)]+\)/g) || [];
+      document.getElementById("output").innerHTML = "";
+      if (matches.length > 0) {
+        document.getElementById("input-container").style.display = "block";
+      } else {
+        compileCode("");
+      }
+    }
+
+    function submitNextInput() {
+      let inputText = document.getElementById("userInput").value.trim();
+      if (inputText === "") return;
+      compileCode(inputText);
+      document.getElementById("userInput").value = "";
+      document.getElementById("input-container").style.display = "none";
+    }
+
+    function compileCode(stdin) {
+      var code = editor.getValue();
+      $.ajax({
+        url: "https://emkc.org/api/v2/piston/execute",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+          language: "c",
+          version: "10.2.0",
+          files: [{ content: code }],
+          stdin: stdin
+        }),
+        success: function(response) {
+          let output = response.run.output;
+          localStorage.setItem("savedOutput", output.replace(/\n/g, "<br>"));
+          document.getElementById("output").innerHTML = output.replace(/\n/g, "<br>") || "No output received.";
+        },
+        error: function(xhr) {
+          document.getElementById("output").innerHTML = "Error running the code. Check console for details.";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
