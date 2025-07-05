@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
+  <!-- <script>
   document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
-  });
+  }); -->
 </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -120,8 +120,8 @@
   <!-- NOTE VIEW -->
   <div id="noteView">
     <button id="backViewBtn"><i class="fas fa-arrow-left"></i> Back</button>
-    <h2 id="viewTitle"></h2>
-    <div style="padding: 30px; background-color: black;">
+    <h2 class="notetitle" id="viewTitle"></h2>
+    <div style="padding: 30px; background-color: black; overflow: auto;">
       <pre id="viewContent"></pre>
     </div>
   </div>
