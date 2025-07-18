@@ -3,11 +3,10 @@
 
 <head>
   <script>
-    document.addEventListener('contextmenu',function(e)
-{
-    e.preventDefault();
-});
-    
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+    });
+
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,9 +31,9 @@
       <h1><img style="width: 100px; margin-bottom: -20px;" src="classlogo.png" alt=""></h1>
       <p style="color: rgba(255, 255, 255, 0.532);" class="subtitle"><i>A calendar-based task manager that helps you
           stay organized and productive</i></p>
-          <button class="goal" id="daily-goals-btn">
-            <i class="fas fa-bullseye"></i> Daily Goals
-          </button>
+      <button class="goal" id="daily-goals-btn">
+        <i class="fas fa-bullseye"></i> Daily Goals
+      </button>
       <button class="back-btn" id="back-to-calendar">
         <i class="fas fa-arrow-left"></i> Calendar
       </button>
@@ -238,15 +237,15 @@
           focused, and make progress every day, ORIGINE with ❤️.</b></i></h3>
   </div>
   <div class="modal-overlay" id="delete-goal-modal">
-  <div class="delete-modal">
-    <h3>Delete Daily Goal?</h3>
-    <p>This will remove the goal from your daily list. Are you sure?</p>
-    <div class="modal-actions">
-      <button class="modal-btn cancel-btn" id="cancel-delete-goal">Cancel</button>
-      <button class="modal-btn confirm-btn" id="confirm-delete-goal">Delete</button>
+    <div class="delete-modal">
+      <h3>Delete Daily Goal?</h3>
+      <p>This will remove the goal from your daily list. Are you sure?</p>
+      <div class="modal-actions">
+        <button class="modal-btn cancel-btn" id="cancel-delete-goal">Cancel</button>
+        <button class="modal-btn confirm-btn" id="confirm-delete-goal">Delete</button>
+      </div>
     </div>
   </div>
-</div>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth-compat.js"></script>
@@ -320,9 +319,9 @@
     const goalPriorityInput = document.getElementById('goal-priority');
     const goalsList = document.getElementById('goals-list');
     const deleteGoalModal = document.getElementById('delete-goal-modal');
-const cancelDeleteGoalBtn = document.getElementById('cancel-delete-goal');
-const confirmDeleteGoalBtn = document.getElementById('confirm-delete-goal');
-let goalToDelete = null;
+    const cancelDeleteGoalBtn = document.getElementById('cancel-delete-goal');
+    const confirmDeleteGoalBtn = document.getElementById('confirm-delete-goal');
+    let goalToDelete = null;
 
 
     // State
@@ -330,6 +329,7 @@ let goalToDelete = null;
     let goals = [];
     let currentFilter = 'all';
     let taskToDelete = null;
+    let taskToEdit = null;
     let currentUser = null;
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
@@ -624,57 +624,70 @@ let goalToDelete = null;
     }
 
     function deleteGoal(goalId) {
-  goalToDelete = goalId;
-  deleteGoalModal.style.display = 'flex';
-}
+      goalToDelete = goalId;
+      deleteGoalModal.style.display = 'flex';
+    }
 
 
     function addDailyGoalsAsTasks() {
       if (!currentUser) return;
 
-      const today = formatDate(new Date());
       const userId = currentUser.uid;
-      const tasksRef = database.ref(`users/${userId}/tasks/${today}`);
       const goalsRef = database.ref(`users/${userId}/goals`);
+      const tasksRef = database.ref(`users/${userId}/tasks`);
 
-      // Get existing tasks for today
-      tasksRef.once('value').then(tasksSnapshot => {
-        const tasks = tasksSnapshot.val() || {};
+      // Get all tasks to find last date present
+      tasksRef.once('value').then(taskSnapshot => {
+        const taskData = taskSnapshot.val() || {};
+        const goalDates = Object.keys(taskData).sort(); // Get sorted dates
+        const lastDate = goalDates.length ? new Date(goalDates[goalDates.length - 1]) : null;
+        const today = new Date();
 
-        // Get all goals
+        // Start from yesterday or 7 days ago if never logged in
+        let startDate = lastDate ? new Date(lastDate) : new Date(today);
+        startDate.setDate(startDate.getDate() + 1); // next day after last
+
         goalsRef.once('value').then(goalsSnapshot => {
           const goals = goalsSnapshot.val();
           if (!goals) return;
 
-          // Check each goal to see if it's already added today
-          Object.keys(goals).forEach(goalId => {
-            const goal = goals[goalId];
-            let alreadyAdded = false;
+          // Add for each missing day up to today
+          while (startDate <= today) {
+            const dateKey = formatDate(startDate);
+            const dayTasksRef = database.ref(`users/${userId}/tasks/${dateKey}`);
 
-            // Check if this goal is already added today
-            Object.values(tasks).forEach(task => {
-              if (task.isDailyGoal && task.goalName === goal.name) {
-                alreadyAdded = true;
-              }
+            dayTasksRef.once('value').then(daySnapshot => {
+              const existingTasks = daySnapshot.val() || {};
+
+              Object.keys(goals).forEach(goalId => {
+                const goal = goals[goalId];
+
+                const alreadyExists = Object.values(existingTasks).some(
+                  t => t.isDailyGoal && t.goalName === goal.name
+                );
+
+                if (!alreadyExists) {
+                  const newTask = {
+                    name: goal.name,
+                    time: goal.time || '00:00',
+                    priority: goal.priority || 'normal',
+                    completed: false,
+                    createdAt: new Date().toISOString(),
+                    isDailyGoal: true,
+                    goalName: goal.name
+                  };
+                  dayTasksRef.push(newTask);
+                }
+              });
             });
 
-            // Add goal as task if not already added
-            if (!alreadyAdded) {
-              const newTask = {
-                name: goal.name,
-                time: goal.time || '00:00',
-                priority: goal.priority || 'normal',
-                completed: false,
-                createdAt: new Date().toISOString(),
-                isDailyGoal: true,
-                goalName: goal.name
-              };
-              tasksRef.push(newTask);
-            }
-          });
+            // Move to next day
+            startDate.setDate(startDate.getDate() + 1);
+          }
         });
       });
     }
+
 
     function scheduleMidnightCheck() {
       const now = new Date();
@@ -690,67 +703,75 @@ let goalToDelete = null;
       }, msUntilMidnight);
     }
 
-    function openAddTaskModal() {
-      if (!currentUser) {
-        authModal.style.display = 'flex';
-        showToast('Please sign in to add tasks', true);
-        return;
-      }
+    function openAddTaskModal(editing = false, task = null, date = null) {
+  if (!currentUser) {
+    authModal.style.display = 'flex';
+    showToast('Please sign in to add tasks', true);
+    return;
+  }
 
-      if (!selectedDate) {
-        showToast('Please select a date first', true);
-        return;
-      }
+  if (!selectedDate && !editing) {
+    showToast('Please select a date first', true);
+    return;
+  }
 
-      // Reset form
-      taskForm.reset();
+  taskForm.reset();
+  taskNameInput.focus();
+  if (!editing) {
+    const now = new Date();
+    taskTimeInput.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    taskToEdit = null;
+  } else if (task && date) {
+  taskNameInput.value = task.name;
+  taskTimeInput.value = task.time;
+  taskPriorityInput.value = task.priority;
+  taskToEdit = { date, id: task.id };
+} else {
+  console.warn("Edit mode called without valid task data");
+  taskToEdit = null;
+}
 
-      // Set default time to current time
-      const now = new Date();
-      const hours = now.getHours().toString().padStart(2, '0');
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      taskTimeInput.value = `${hours}:${minutes}`;
+  addTaskModal.style.display = 'flex';
+}
 
-      // Focus on task name input
-      taskNameInput.focus();
-
-      // Show modal
-      addTaskModal.style.display = 'flex';
-    }
 
     function addTask(e) {
-      e.preventDefault();
+  e.preventDefault();
 
-      if (!currentUser) {
-        showToast('Please sign in to add tasks', true);
-        return;
-      }
+  if (!currentUser) return;
 
-      if (!selectedDate) {
-        showToast('Please select a date first', true);
-        return;
-      }
+  const taskData = {
+    name: taskNameInput.value,
+    time: taskTimeInput.value,
+    priority: taskPriorityInput.value,
+    completed: false,
+    createdAt: new Date().toISOString()
+  };
 
-      const task = {
-        name: taskNameInput.value,
-        time: taskTimeInput.value,
-        priority: taskPriorityInput.value,
-        completed: false,
-        createdAt: new Date().toISOString()
-      };
+  const userId = currentUser.uid;
 
-      const userId = currentUser.uid;
-      const dateKey = selectedDate;
-      const newTaskRef = database.ref(`users/${userId}/tasks/${dateKey}`).push();
-      newTaskRef.set(task);
-
-      // Close modal and reset form
-      addTaskModal.style.display = 'none';
-      taskForm.reset();
-
-      // Show success notification
-      showToast('Task added successfully!');
+  if (taskToEdit) {
+    const { date, id } = taskToEdit;
+    const taskRef = database.ref(`users/${userId}/tasks/${date}/${id}`);
+    taskRef.update(taskData).then(() => {
+      showToast('Task updated!');
+    });
+    taskToEdit = null;
+  } else {
+    if (!selectedDate) {
+      showToast('Please select a date first', true);
+      return;
     }
+    const dateKey = selectedDate;
+    const newTaskRef = database.ref(`users/${userId}/tasks/${dateKey}`).push();
+    newTaskRef.set(taskData);
+    showToast('Task added successfully!');
+  }
+
+  addTaskModal.style.display = 'none';
+  taskForm.reset();
+}
+
 
     function renderTasksForDate(date) {
       const tasksForDate = dateTasks[date] || [];
@@ -805,6 +826,9 @@ let goalToDelete = null;
                         <button class="action-btn complete-btn" onclick="toggleComplete('${date}', '${task.id}')">
                             <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
                         </button>
+                        <button class="action-btn edit-btn" onclick="openEditTaskModal('${date}', '${task.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
                         <button class="action-btn delete-btn" onclick="openDeleteModal('${date}', '${task.id}')">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -847,6 +871,14 @@ let goalToDelete = null;
       taskToDelete = { date, id: taskId };
       deleteModal.style.display = 'flex';
     }
+    function openEditTaskModal(date, taskId) {
+  const task = (dateTasks[date] || []).find(t => t.id === taskId);
+  if (task) {
+    openAddTaskModal(true, task, date);
+  }
+}
+window.openEditTaskModal = openEditTaskModal;
+
 
     function deleteTask() {
       if (taskToDelete && currentUser) {
@@ -1024,21 +1056,21 @@ let goalToDelete = null;
       return `${year}-${month}-${day}`;
     }
     confirmDeleteGoalBtn.addEventListener('click', () => {
-  if (!currentUser || !goalToDelete) return;
+      if (!currentUser || !goalToDelete) return;
 
-  const userId = currentUser.uid;
-  database.ref(`users/${userId}/goals/${goalToDelete}`).remove()
-    .then(() => {
-      showToast('Daily goal deleted!');
+      const userId = currentUser.uid;
+      database.ref(`users/${userId}/goals/${goalToDelete}`).remove()
+        .then(() => {
+          showToast('Daily goal deleted!');
+          deleteGoalModal.style.display = 'none';
+          goalToDelete = null;
+        });
+    });
+
+    cancelDeleteGoalBtn.addEventListener('click', () => {
       deleteGoalModal.style.display = 'none';
       goalToDelete = null;
     });
-});
-
-cancelDeleteGoalBtn.addEventListener('click', () => {
-  deleteGoalModal.style.display = 'none';
-  goalToDelete = null;
-});
 
 
     window.toggleComplete = toggleComplete;
