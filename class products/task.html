@@ -384,7 +384,7 @@ let goalToDelete = null;
           showUserInfo(user);
           loadTasks();
           loadGoals();
-          // Schedule midnight check for daily goals
+          addDailyGoalsAsTasks();
           scheduleMidnightCheck();
         } else {
           // User is signed out
