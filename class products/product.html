@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        });
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>classproducts</title>
+    <link rel="icon" type="image/png" href="icon.png?v=2">
+    <link rel="stylesheet" href="product.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="grid-overlay"></div>
+
+    <!-- Floating Shapes -->
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span class="logo-text">ClassTolls</span>
+                </a>
+                <div class="nav-links">
+                    <a href="#">Home</a>
+                    <a href="#products">Products</a>
+                    <a href="#Features">Features</a>
+                    <a href="#Contact">Contact</a>
+                </div>
+                <button class="cta-button"><a target="_blank" style="text-decoration: none; color: white;"
+                        href="https://origine-class.netlify.app/">Class</a></button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Advanced Development Tools & Solutions</h1>
+            <p>Powerful tools for students and productivity enthusiasts. Build, manage, and optimize your workflow with
+                our cutting-edge solutions.</p>
+            <div class="hero-buttons">
+                <a href="#products" class="cta-button">Explore Products</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="products">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Products</h2>
+                <p>Discover our suite of powerful development tools designed to support students and boost their
+                    learning productivity.</p>
+            </div>
+            <div class="products-grid">
+                <!-- Product 1 -->
+                <div class="product-card floating" style="animation-delay: 0.1s;">
+                    <div class="product-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3>HTML Compiler</h3>
+                        <p>Advanced HTML development environment with live preview, code validation, and responsive
+                            design optimization tools.</p>
+                    </div>
+                    <div class="product-footer">
+                        <span class="version">Version 1.0</span>
+                        <a href="html compiler.html" class="product-link">
+                            Explore <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="product-card floating" style="animation-delay: 0.3s;">
+                    <div class="product-icon">
+                        <i class="fab fa-js"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3>JavaScript Compiler</h3>
+                        <p>Modern JavaScript development suite with ES6+ support, live preview, and advanced debugging
+                            capabilities.</p>
+                    </div>
+                    <div class="product-footer">
+                        <span class="version">Version 1.0</span>
+                        <a href="jscompiler.html" class="product-link">
+                            Explore <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="product-card floating" style="animation-delay: 0.5s;">
+                    <div class="product-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3>TaskFlow Manager</h3>
+                        <p>Simple daily task manager to help you stay organized and keep track of your to-do list.</p>
+                    </div>
+                    <div class="product-footer">
+                        <span class="version">Version 1.0</span>
+                        <a href="task.html" class="product-link">
+                            Explore <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Product 4 -->
+                <div class="product-card floating" style="animation-delay: 0.7s;">
+                    <div class="product-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3>Space Explorer</h3>
+                        <p>Interactive space website with real-time celestial data, astronomical events, and educational
+                            resources.</p>
+                    </div>
+                    <div class="product-footer">
+                        <span class="version">Version 1.0</span>
+                        <a href="https://infinite-official.netlify.app/" class="product-link">
+                            Explore <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Product 6: Wallpaper Website -->
+                <div class="product-card floating" style="animation-delay: 0.9s;">
+                    <div class="product-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3>Gallery</h3>
+                        <p>Beautiful wallpaper collection website offering HD, 4K, and animated backgrounds for desktops
+                            and mobile devices.</p>
+                    </div>
+                    <div class="product-footer">
+                        <span class="version">Version 1.0</span>
+                        <a href="https://origine-gallery4k.netlify.app/" class="product-link" target="_blank">
+                            Explore <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+
+
+                <div class="product-card floating" style="animation-delay: 0.7s;">
+                    <div class="product-icon">
+                        <i class="fas fa-terminal"></i>
+                    </div>
+                    <div class="product-content">
+                        <h3>C Compiler Pro</h3>
+                        <p>Simple C programming tool for writing, compiling, and running C code with ease — perfect for
+                            students and beginners.</p>
+                    </div>
+                    <div class="product-footer">
+                        <span class="version">Version 1.0</span>
+                        <a href="c compiler.html" class="product-link" target="_blank">
+                            Explore <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="Features" class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Why Choose Our Products</h2>
+                <p>Experience the difference with our cutting-edge solutions</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Lightning Fast</h3>
+                    <p>Optimized for performance with minimal resource consumption and maximum efficiency.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure & Reliable</h3>
+                    <p>Enterprise-grade security protocols to keep your data and projects safe at all times.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3>Continuous Updates</h3>
+                    <p>Regular updates with new features, improvements, and security enhancements.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>24/7 Support</h3>
+                    <p>Dedicated support team ready to assist you anytime with any questions or issues.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="Contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>ClassTools</h3>
+                    <p>Creating advanced development tools and solutions for professionals and enthusiasts since 2024.
+                    </p>
+                    <div class="social-links">
+                        <a style="text-decoration: none;" href=""><i class="fab fa-facebook-f"></i></a>
+                        <a style="text-decoration: none;" href=""><i class="fab fa-twitter"></i></a>
+                        <a style="text-decoration: none;" href=""><i class="fab fa-github"></i></a>
+                        <a style="text-decoration: none;" href=""><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Products</h3>
+                    <ul class="footer-links">
+                        <li><a href="html compiler.html"><i class="fas fa-arrow-right"></i>HTML compiler</a></li>
+                        <li><a href="jscompiler.html"><i class="fas fa-arrow-right"></i> JavaScript Compiler</a></li>
+                        <li><a href="task.html"><i class="fas fa-arrow-right"></i> TaskFlow Manager</a></li>
+                        <li><a href="https://infinite-official.netlify.app/"><i class="fas fa-arrow-right"></i> Space
+                                Explorer</a></li>
+                        <li><a href="c compiler.html"><i class="fas fa-arrow-right"></i>C compiler</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> Documentation</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> Tutorials</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> API Reference</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> Community Forum</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-envelope"></i> XYZ@.com</a></li>
+                        <li><a href="#"><i class="fas fa-phone"></i> +91 ....1</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i>Some where from earth</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>&copy; 2023 Class. All rights reserved. Designed with <i class="fas fa-heart"
+                        style="color: #f72585;"></i> for Students.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
