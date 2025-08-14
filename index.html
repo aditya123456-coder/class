@@ -5,7 +5,7 @@
   document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
   }); 
-</script>
+</script> 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Class</title>
@@ -200,7 +200,42 @@
   <div id="userCount" style="color: white; text-align: center; margin-top: 10px;"></div>
 
 
+<!-- Notification Popup -->
+<div id="driveNotification" style="
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    color: black;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    max-width: 300px;
+    font-family: 'Poppins', sans-serif;
+">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <strong>SY CSE 2025-26 SE 1 timetable</strong>
+        <button onclick="document.getElementById('driveNotification').style.display='none'"
+            style="background: none; border: none; font-size: 18px; cursor: pointer;">×</button>
+    </div>
+    <p style="margin: 10px 0;">Click below to view.</p>
+    <a href="https://drive.google.com/file/d/1-Kqmc1QEmMZ03mEVK--TYDUOWppKEa1z/view?usp=sharing" target="_blank" 
+       style="display: inline-block; background: #007bff; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none;">
+       View Image
+    </a>
+</div>
 
+<script>
+  // Show drive link notification after 2 seconds
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        document.getElementById('driveNotification').style.display = 'block';
+    }, 2000);
+});
+
+</script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
