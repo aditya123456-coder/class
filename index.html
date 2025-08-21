@@ -301,33 +301,33 @@
 
     import { onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 
-// Track Online Users
-function trackOnlineUsers() {
-  const connectionsRef = ref(db, "onlineUsers");
+    // Track Online Users
+    function trackOnlineUsers() {
+      const connectionsRef = ref(db, "onlineUsers");
 
-  // Generate unique ID for this session
-  const myConnectionRef = push(connectionsRef);
+      // Generate unique ID for this session
+      const myConnectionRef = push(connectionsRef);
 
-  // When connected, add self to list
-  set(myConnectionRef, {
-    connectedAt: serverTimestamp()
-  });
+      // When connected, add self to list
+      set(myConnectionRef, {
+        connectedAt: serverTimestamp()
+      });
 
-  // Remove when disconnected
-  onDisconnect(myConnectionRef).remove();
+      // Remove when disconnected
+      onDisconnect(myConnectionRef).remove();
 
-  // Listen to total online count
-  onValue(connectionsRef, snapshot => {
-    if (snapshot.exists()) {
-      const onlineCount = Object.keys(snapshot.val()).length;
-      document.getElementById("onlineCount").textContent = `Online: ${onlineCount}`;
-    } else {
-      document.getElementById("onlineCount").textContent = `Online: 0`;
+      // Listen to total online count
+      onValue(connectionsRef, snapshot => {
+        if (snapshot.exists()) {
+          const onlineCount = Object.keys(snapshot.val()).length;
+          document.getElementById("onlineCount").textContent = `Online: ${onlineCount}`;
+        } else {
+          document.getElementById("onlineCount").textContent = `Online: 0`;
+        }
+      });
     }
-  });
-}
 
-trackOnlineUsers();
+    trackOnlineUsers();
 
 
     //for users
@@ -693,18 +693,19 @@ trackOnlineUsers();
         const ab = document.createElement('div');
         ab.className = 'action-buttons';
         ab.innerHTML = `
-    <button class="action-btn" onclick="deleteItem('${id}')">
+    <button class="action-btn" onclick="event.stopPropagation(); deleteItem('${id}')">
       <i class="fas fa-trash"></i>
     </button>
-    <button class="action-btn" onclick="openEditor('${id}')">
+    <button class="action-btn" onclick="event.stopPropagation(); openEditor('${id}')">
       <i class="fas fa-edit"></i>
     </button>
-    <button class="action-btn" onclick="openMoveModal('${id}')">
+    <button class="action-btn" onclick="event.stopPropagation(); openMoveModal('${id}')">
       <i class="fas fa-folder-open"></i>
     </button>
   `;
         card.appendChild(ab);
       }
+
 
 
       card.addEventListener('click', clickHandler);
