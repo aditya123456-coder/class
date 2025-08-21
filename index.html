@@ -787,68 +787,77 @@
 
     // Modals
     window.openModal = (editId = null, forcedType = null) => {
-      currentEditId = editId;
-      modalTitle.textContent = editId
-        ? 'Edit Item'
-        : forcedType === 'url' ? 'Add New URL'
-          : forcedType === 'note' ? 'Add New Note'
-            : 'Add New Item';
+  currentEditId = editId;
+  modalTitle.textContent = editId
+    ? 'Edit Item'
+    : forcedType === 'url' ? 'Add New URL'
+      : forcedType === 'note' ? 'Add New Note'
+        : 'Add New Item';
 
-      itemName.value = '';
-      itemType.value = forcedType || 'folder';
-      itemURL.value = '';
-      noteContentInput.value = '';
-      clearFile();
-      document.getElementById('itemDescription').value = '';
-      descriptionContainer.style.display = 'none';
+  // Reset fields
+  itemName.value = '';
+  itemType.value = forcedType || 'folder';
+  itemURL.value = '';
+  noteContentInput.value = '';
+  clearFile();
+  document.getElementById('itemDescription').value = '';
+  descriptionContainer.style.display = 'none';
 
-      fileUploadContainer.style.display = 'none';
-      urlContainer.style.display = 'none';
-      noteContentContainer.style.display = 'none';
+  fileUploadContainer.style.display = 'none';
+  urlContainer.style.display = 'none';
+  noteContentContainer.style.display = 'none';
 
-      if (forcedType === 'file') fileUploadContainer.style.display = 'block';
-      if (forcedType === 'url') urlContainer.style.display = 'block';
-      if (forcedType === 'note') noteContentContainer.style.display = 'block';
+  // Show correct section for forced type
+  if (forcedType === 'file') fileUploadContainer.style.display = 'block';
+  if (forcedType === 'url') urlContainer.style.display = 'block';
+  if (forcedType === 'note') noteContentContainer.style.display = 'block';
 
-      if (editId) {
-        // Get item from Realtime Database
-        get(ref(db, `items/${editId}`)).then(snapshot => {
-          if (snapshot.exists()) {
-            const d = snapshot.val();
-            itemName.value = d.name;
-            itemType.value = d.type;
+  if (editId) {
+    // Get item from Realtime Database
+    get(ref(db, `items/${editId}`)).then(snapshot => {
+      if (snapshot.exists()) {
+        const d = snapshot.val();
+        itemName.value = d.name;
+        itemType.value = d.type;
 
-            if (d.type === 'file') {
-              fileUploadContainer.style.display = 'block';
-              filePreview.style.display = 'block';
-              fileName.textContent = d.name;
-              fileSize.textContent = formatSize(d.size);
-              const eExt = d.name.split('.').pop().toLowerCase();
-              fileIcon.className = `fas fa-${fileIcons[eExt] || fileIcons.default}`;
-              selectedFiles = [{
-                name: d.name,
-                size: d.size,
-                fileData: d.fileData
-              }];
-            }
+        if (d.type === 'file') {
+          fileUploadContainer.style.display = 'block';
+          filePreview.style.display = 'block';
+          fileName.textContent = d.name;
+          fileSize.textContent = formatSize(d.size);
+          const eExt = d.name.split('.').pop().toLowerCase();
+          fileIcon.className = `fas fa-${fileIcons[eExt] || fileIcons.default}`;
+          selectedFiles = [{
+            name: d.name,
+            size: d.size,
+            fileData: d.fileData
+          }];
+        }
 
-            if (d.type === 'url') {
-              urlContainer.style.display = 'block';
-              itemURL.value = d.url;
-              descriptionContainer.style.display = 'block';
-              document.getElementById('itemDescription').value = d.description || '';
-            }
+        if (d.type === 'url') {
+          urlContainer.style.display = 'block';
+          itemURL.value = d.url;
+          descriptionContainer.style.display = 'block';
+          document.getElementById('itemDescription').value = d.description || '';
+        }
 
-            if (d.type === 'note') {
-              noteContentContainer.style.display = 'block';
-              noteContentInput.value = d.content;
-            }
-          }
-        });
+        if (d.type === 'note') {
+          noteContentContainer.style.display = 'block';
+          noteContentInput.value = d.content;
+        }
+
+        // ✅ Fix: show description for folder as well
+        if (d.type === 'folder') {
+          descriptionContainer.style.display = 'block';
+          document.getElementById('itemDescription').value = d.description || '';
+        }
       }
+    });
+  }
 
-      modal.classList.add('active');
-    };
+  modal.classList.add('active');
+};
+
 
     window.openPasswordModal = act => {
       pendingAction = act;
