@@ -35,6 +35,7 @@
       id="logoutBtn" onclick="logout()">Logout</button>
     <div id="visitCount" style="color: white; margin-top: 20px; margin-left: 15px;"></div>
     <div id="userCount" style="color: white; margin-top: 20px; margin-left: 15px;"></div>
+    <div id="onlineCount" style="color: white; margin-top: 20px; margin-left: 15px;"></div>
   </div>
 
   <!-- PASSWORD MODAL -->
@@ -296,6 +297,38 @@
         }
       });
     }
+
+
+    import { onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+// Track Online Users
+function trackOnlineUsers() {
+  const connectionsRef = ref(db, "onlineUsers");
+
+  // Generate unique ID for this session
+  const myConnectionRef = push(connectionsRef);
+
+  // When connected, add self to list
+  set(myConnectionRef, {
+    connectedAt: serverTimestamp()
+  });
+
+  // Remove when disconnected
+  onDisconnect(myConnectionRef).remove();
+
+  // Listen to total online count
+  onValue(connectionsRef, snapshot => {
+    if (snapshot.exists()) {
+      const onlineCount = Object.keys(snapshot.val()).length;
+      document.getElementById("onlineCount").textContent = `Online: ${onlineCount}`;
+    } else {
+      document.getElementById("onlineCount").textContent = `Online: 0`;
+    }
+  });
+}
+
+trackOnlineUsers();
+
 
     //for users
 
