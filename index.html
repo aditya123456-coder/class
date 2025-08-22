@@ -768,19 +768,77 @@
       hideLoading();
     }
 
-    function showNoteView(d) {
-      viewTitle.textContent = d.name;
+    // ---------- helpers ----------
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
-      // Convert plain URLs into clickable links
-      const contentWithLinks = d.content.replace(
-        /(https?:\/\/[^\s]+)/g,
-        '<a href="$1" target="_blank" style="color: blue; text-decoration: underline;">$1</a>'
-      );
+/**
+ * Convert plain http(s) URLs into safe <a> tags while escaping all other text.
+ * This avoids inserting raw HTML from user content.
+ */
+function linkifyAndEscape(rawText) {
+  if (!rawText) return '';
 
-      // Allow HTML so links are clickable
-      viewContent.innerHTML = contentWithLinks;
-      noteView.classList.add('active');
+  // Regex to find http(s) URLs. We stop at whitespace or '<' to be safe.
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  let lastIndex = 0;
+  let result = '';
+  let match;
+
+  while ((match = urlRegex.exec(rawText)) !== null) {
+    const url = match[0];
+    const idx = match.index;
+
+    // Append escaped text before the URL
+    if (idx > lastIndex) {
+      result += escapeHtml(rawText.slice(lastIndex, idx));
     }
+
+    // Build a safe href and escaped display text
+    let safeHref;
+    try {
+      safeHref = encodeURI(url);
+    } catch (e) {
+      safeHref = '#';
+    }
+    const displayText = escapeHtml(url);
+
+    // Append anchor (note: anchor attributes are constructed from safeHref only)
+    result += `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" style="color: blue; text-decoration: underline;">${displayText}</a>`;
+
+    lastIndex = idx + url.length;
+  }
+
+  // Append the remainder escaped
+  if (lastIndex < rawText.length) {
+    result += escapeHtml(rawText.slice(lastIndex));
+  }
+
+  return result;
+}
+
+// ---------- updated showNoteView ----------
+function showNoteView(d) {
+  // safe set title (no HTML injection)
+  viewTitle.textContent = d && d.name ? d.name : 'Note';
+
+  // build safe HTML: escape code/HTML then convert URLs to anchors safely
+  const safeHtml = linkifyAndEscape(d && d.content ? d.content : '');
+
+  // viewContent is assumed to be a <pre> or other element that preserves whitespace.
+  // We intentionally set innerHTML because safeHtml contains only escaped text + controlled <a> tags.
+  viewContent.innerHTML = safeHtml;
+
+  noteView.classList.add('active');
+}
+
 
 
     backViewBtn.addEventListener('click', () => noteView.classList.remove('active'));
