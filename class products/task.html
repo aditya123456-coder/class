@@ -143,43 +143,7 @@
       </div>
     </div>
   </div>
-
-  <!-- Authentication Modal -->
-  <div class="modal-overlay" id="auth-modal">
-    <div class="auth-modal">
-      <div class="close-modal" id="close-auth-modal">
-        <i class="fas fa-times"></i>
-      </div>
-      <h2 class="modal-title">Sign In</h2>
-
-      <div class="auth-methods">
-        <button class="btn btn-primary" id="google-signin" style="width: 100%; margin-bottom: 15px; display: none;">
-          <i class="fab fa-google"></i> Sign in with Google
-        </button>
-
-        <button class="btn" id="email-signin" style="width: 100%; background-color: #f0f2f5;">
-          <i class="fas fa-envelope"></i> Sign in with Email
-        </button>
-      </div>
-
-      <div class="email-auth-form" id="email-auth-form" style="display: none; margin-top: 20px;">
-        <div class="form-group">
-          <label for="auth-email">Email</label>
-          <input type="email" id="auth-email" placeholder="your@email.com" required>
-        </div>
-
-        <div class="form-group">
-          <label for="auth-password">Password</label>
-          <input type="password" id="auth-password" placeholder="Enter password" required>
-        </div>
-
-        <div class="form-group" style="display: flex; gap: 10px;">
-          <button type="button" class="btn" id="sign-in-email" style="flex: 1;">Sign In</button>
-          <button type="button" class="btn btn-primary" id="sign-up-email" style="flex: 1;">Sign Up</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  
 
   <!-- Daily Goals Modal -->
   <div class="modal-overlay" id="goals-modal">
@@ -278,10 +242,8 @@
     const filterButtons = document.querySelectorAll('.filter-btn');
     const addTaskModal = document.getElementById('add-task-modal');
     const deleteModal = document.getElementById('delete-modal');
-    const authModal = document.getElementById('auth-modal');
     const openModalBtn = document.getElementById('open-modal');
     const closeModalBtn = document.getElementById('close-modal');
-    const closeAuthModalBtn = document.getElementById('close-auth-modal');
     const cancelDeleteBtn = document.getElementById('cancel-delete');
     const confirmDeleteBtn = document.getElementById('confirm-delete');
     const floatingAddBtn = document.getElementById('floating-add');
@@ -289,15 +251,7 @@
     const completedTasksEl = document.getElementById('completed-tasks');
     const pendingTasksEl = document.getElementById('pending-tasks');
     const toastEl = document.getElementById('toast');
-    const authContainer = document.getElementById('auth-container');
     const signInBtn = document.getElementById('sign-in-btn');
-    const googleSignInBtn = document.getElementById('google-signin');
-    const emailSignInBtn = document.getElementById('email-signin');
-    const emailAuthForm = document.getElementById('email-auth-form');
-    const signInEmailBtn = document.getElementById('sign-in-email');
-    const signUpEmailBtn = document.getElementById('sign-up-email');
-    const authEmailInput = document.getElementById('auth-email');
-    const authPasswordInput = document.getElementById('auth-password');
 
     // Calendar Elements
     const calendarView = document.getElementById('calendar-view');
@@ -348,22 +302,17 @@
     openModalBtn.addEventListener('click', openAddTaskModal);
     floatingAddBtn.addEventListener('click', openAddTaskModal);
     closeModalBtn.addEventListener('click', () => addTaskModal.style.display = 'none');
-    closeAuthModalBtn.addEventListener('click', () => authModal.style.display = 'none');
     closeGoalsModalBtn.addEventListener('click', () => goalsModal.style.display = 'none');
     cancelDeleteBtn.addEventListener('click', () => deleteModal.style.display = 'none');
     confirmDeleteBtn.addEventListener('click', deleteTask);
-    signInBtn.addEventListener('click', () => authModal.style.display = 'flex');
-    googleSignInBtn.addEventListener('click', signInWithGoogle);
-    emailSignInBtn.addEventListener('click', () => emailAuthForm.style.display = 'block');
-    signInEmailBtn.addEventListener('click', signInWithEmail);
-    signUpEmailBtn.addEventListener('click', signUpWithEmail);
     prevMonthBtn.addEventListener('click', () => changeMonth(-1));
     nextMonthBtn.addEventListener('click', () => changeMonth(1));
     backToCalendarBtn.addEventListener('click', backToCalendar);
     dailyGoalsBtn.addEventListener('click', openGoalsModal);
+    signInBtn.addEventListener("click", signInWithGoogle);
 
     // Close modals when clicking outside
-    [addTaskModal, deleteModal, authModal, goalsModal].forEach(modal => {
+    [addTaskModal, deleteModal, goalsModal].forEach(modal => {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           modal.style.display = 'none';
@@ -419,53 +368,15 @@
                     <i class="fas fa-sign-in-alt"></i> Sign In
                 </button>
             `;
-      document.getElementById('sign-in-btn').addEventListener('click', () => authModal.style.display = 'flex');
+     document.getElementById('sign-in-btn').addEventListener('click', signInWithGoogle);
     }
 
     function signInWithGoogle() {
+      alert("yes");
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider)
         .then(() => {
-          authModal.style.display = 'none';
           showToast('Signed in successfully!');
-        })
-        .catch(error => {
-          showToast(`Error: ${error.message}`, true);
-        });
-    }
-
-    function signInWithEmail() {
-      const email = authEmailInput.value;
-      const password = authPasswordInput.value;
-
-      if (!email || !password) {
-        showToast('Please enter email and password', true);
-        return;
-      }
-
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          authModal.style.display = 'none';
-          showToast('Signed in successfully!');
-        })
-        .catch(error => {
-          showToast(`Error: ${error.message}`, true);
-        });
-    }
-
-    function signUpWithEmail() {
-      const email = authEmailInput.value;
-      const password = authPasswordInput.value;
-
-      if (!email || !password) {
-        showToast('Please enter email and password', true);
-        return;
-      }
-
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => {
-          authModal.style.display = 'none';
-          showToast('Account created successfully!');
         })
         .catch(error => {
           showToast(`Error: ${error.message}`, true);
@@ -587,7 +498,6 @@
 
     function openGoalsModal() {
       if (!currentUser) {
-        authModal.style.display = 'flex';
         showToast('Please sign in to manage daily goals', true);
         return;
       }
@@ -705,7 +615,6 @@
 
     function openAddTaskModal(editing = false, task = null, date = null) {
   if (!currentUser) {
-    authModal.style.display = 'flex';
     showToast('Please sign in to add tasks', true);
     return;
   }
@@ -1020,7 +929,6 @@ window.openEditTaskModal = openEditTaskModal;
 
     function viewTasksForDate(date) {
       if (!currentUser) {
-        authModal.style.display = 'flex';
         showToast('Please sign in to view tasks', true);
         return;
       }
