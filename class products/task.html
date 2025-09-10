@@ -252,6 +252,8 @@
     const pendingTasksEl = document.getElementById('pending-tasks');
     const toastEl = document.getElementById('toast');
     const signInBtn = document.getElementById('sign-in-btn');
+    const authContainer = document.getElementById('auth-container');
+
 
     // Calendar Elements
     const calendarView = document.getElementById('calendar-view');
@@ -372,7 +374,6 @@
     }
 
     function signInWithGoogle() {
-      alert("yes");
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider)
         .then(() => {
