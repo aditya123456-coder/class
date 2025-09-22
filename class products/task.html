@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+    });
+
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="task.png?v=2">
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="task.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+
+
+      <div class="auth-container" id="auth-container">
+        <!-- Authentication buttons will be added here dynamically -->
+        <button class="auth-in" id="sign-in-btn">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+      </div>
+
+      <h1><img style="width: 60px; margin-bottom: -10px; border: thin solid rgb(255, 255, 255); border-radius: 50%; padding: 10px;" src="task.png" alt=""></h1>
+      <p style="color: rgba(255, 255, 255, 0.532);" class="subtitle"><i>A calendar-based task manager that helps you
+          stay organized and productive</i></p>
+      <button class="goal" id="daily-goals-btn">
+        <i class="fas fa-bullseye"></i> Daily Goals
+      </button>
+      <button class="back-btn" id="back-to-calendar">
+        <i class="fas fa-arrow-left"></i> Calendar
+      </button>
+
+      <div style="display: none;" class="stats">
+        <div class="stat-card">
+          <div class="stat-number" id="total-tasks">0</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="completed-tasks">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="pending-tasks">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Calendar View -->
+    <div class="calendar-view" id="calendar-view">
+      <div class="calendar-header">
+        <div class="calendar-nav">
+          <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
+        </div>
+        <div class="calendar-title" id="calendar-title">Month Year</div>
+        <div class="calendar-nav">
+          <button id="next-month"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <div class="calendar-grid" id="calendar-grid">
+        <!-- Calendar will be generated here -->
+      </div>
+    </div>
+
+    <!-- Task Interface (hidden by default) -->
+    <div class="task-interface" id="task-interface">
+      <div class="selected-date" id="selected-date">Selected Date</div>
+
+      <div class="action-bar">
+        <div class="task-filters">
+          <div class="filter-btn active" data-filter="all">All</div>
+          <div class="filter-btn" data-filter="active">Active</div>
+          <div class="filter-btn" data-filter="completed">Completed</div>
+        </div>
+
+        <button style="display: none;" class="btn btn-primary" id="open-modal">
+          <i class="fas fa-plus btn-icon"></i> Add New Task
+        </button>
+      </div>
+
+      <ul class="task-list" id="task-list">
+        <!-- Tasks will be added here dynamically -->
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <h3>No tasks for this date</h3>
+          <p>Add your first task to get started!</p>
+        </div>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Add Task Modal -->
+  <div class="modal-overlay" id="add-task-modal">
+    <div class="add-task-modal">
+      <div class="close-modal" id="close-modal">
+        <i class="fas fa-times"></i>
+      </div>
+      <h2 class="modal-title">Add New Task</h2>
+      <form id="task-form">
+        <div class="form-group">
+          <label for="task-name">Task Name</label>
+          <input type="text" id="task-name" placeholder="What needs to be done?" required>
+        </div>
+
+        <div class="form-group">
+          <label for="task-time">Time</label>
+          <input type="time" id="task-time" required>
+        </div>
+
+        <div class="form-group">
+          <label for="task-priority">Priority</label>
+          <select id="task-priority">
+            <option value="normal">Normal</option>
+            <option value="high">High Priority</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+          <i class="fas fa-plus btn-icon"></i> Add Task
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="delete-modal">
+      <h3>Confirm Deletion</h3>
+      <p>Are you sure you want to delete this task? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="modal-btn cancel-btn" id="cancel-delete">Cancel</button>
+        <button class="modal-btn confirm-btn" id="confirm-delete">Delete</button>
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- Daily Goals Modal -->
+  <div class="modal-overlay" id="goals-modal">
+    <div class="goals-modal">
+      <div class="close-modal" id="close-goals-modal">
+        <i class="fas fa-times"></i>
+      </div>
+      <h2 class="modal-title">Daily Goals</h2>
+
+      <ul class="goals-list" id="goals-list">
+        <!-- Goals will be added here dynamically -->
+        <div class="empty-state">
+          <i class="fas fa-bullseye"></i>
+          <h3>No daily goals yet</h3>
+          <p>Add your first daily goal below!</p>
+        </div>
+      </ul>
+
+      <form id="goal-form">
+        <div class="form-group">
+          <label for="goal-name">Goal Name</label>
+          <input type="text" id="goal-name" placeholder="What's your daily goal?" required>
+        </div>
+
+        <div class="form-group">
+          <label for="goal-time">Time</label>
+          <input type="time" id="goal-time">
+        </div>
+
+        <div class="form-group">
+          <label for="goal-priority">Priority</label>
+          <select id="goal-priority">
+            <option value="normal">Normal</option>
+            <option value="high">High Priority</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-goals" style="width: 100%; margin-top: 10px;">
+          <i class="fas fa-plus btn-icon"></i> Add Goal
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="floating-add" id="floating-add">
+    <i class="fas fa-plus"></i>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+  <div style="padding: 30px;">
+    <h3 style="color: #0000004f; text-align: center;"><i><b>A goal without a plan is just a wish — start planning, stay
+          focused, and make progress every day, ORIGINE with ❤️.</b></i></h3>
+  </div>
+  <div class="modal-overlay" id="delete-goal-modal">
+    <div class="delete-modal">
+      <h3>Delete Daily Goal?</h3>
+      <p>This will remove the goal from your daily list. Are you sure?</p>
+      <div class="modal-actions">
+        <button class="modal-btn cancel-btn" id="cancel-delete-goal">Cancel</button>
+        <button class="modal-btn confirm-btn" id="confirm-delete-goal">Delete</button>
+      </div>
+    </div>
+  </div>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBj72SFCM2wSHEP5IEqOCFNMP_FiL0gw28",
+      authDomain: "test-489a1.firebaseapp.com",
+      databaseURL: "https://test-489a1-default-rtdb.firebaseio.com",
+      projectId: "test-489a1",
+      storageBucket: "test-489a1.firebasestorage.app",
+      messagingSenderId: "978892656529",
+      appId: "1:978892656529:web:ea00af8b6e3768abba1430",
+      measurementId: "G-N1382Z67VH"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    // DOM Elements
+    const taskForm = document.getElementById('task-form');
+    const taskList = document.getElementById('task-list');
+    const taskNameInput = document.getElementById('task-name');
+    const taskTimeInput = document.getElementById('task-time');
+    const taskPriorityInput = document.getElementById('task-priority');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const addTaskModal = document.getElementById('add-task-modal');
+    const deleteModal = document.getElementById('delete-modal');
+    const openModalBtn = document.getElementById('open-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const cancelDeleteBtn = document.getElementById('cancel-delete');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+    const floatingAddBtn = document.getElementById('floating-add');
+    const totalTasksEl = document.getElementById('total-tasks');
+    const completedTasksEl = document.getElementById('completed-tasks');
+    const pendingTasksEl = document.getElementById('pending-tasks');
+    const toastEl = document.getElementById('toast');
+    const signInBtn = document.getElementById('sign-in-btn');
+    const authContainer = document.getElementById('auth-container');
+
+
+    // Calendar Elements
+    const calendarView = document.getElementById('calendar-view');
+    const taskInterface = document.getElementById('task-interface');
+    const calendarGrid = document.getElementById('calendar-grid');
+    const calendarTitle = document.getElementById('calendar-title');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    const selectedDateEl = document.getElementById('selected-date');
+    const backToCalendarBtn = document.getElementById('back-to-calendar');
+
+    // Daily Goals Elements
+    const goalsModal = document.getElementById('goals-modal');
+    const closeGoalsModalBtn = document.getElementById('close-goals-modal');
+    const dailyGoalsBtn = document.getElementById('daily-goals-btn');
+    const goalForm = document.getElementById('goal-form');
+    const goalNameInput = document.getElementById('goal-name');
+    const goalTimeInput = document.getElementById('goal-time');
+    const goalPriorityInput = document.getElementById('goal-priority');
+    const goalsList = document.getElementById('goals-list');
+    const deleteGoalModal = document.getElementById('delete-goal-modal');
+    const cancelDeleteGoalBtn = document.getElementById('cancel-delete-goal');
+    const confirmDeleteGoalBtn = document.getElementById('confirm-delete-goal');
+    let goalToDelete = null;
+
+
+    // State
+    let tasks = [];
+    let goals = [];
+    let currentFilter = 'all';
+    let taskToDelete = null;
+    let taskToEdit = null;
+    let currentUser = null;
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let selectedDate = null;
+    let dateTasks = {};
+
+    // Initialize
+    initApp();
+
+    // Event Listeners
+    taskForm.addEventListener('submit', addTask);
+    goalForm.addEventListener('submit', addGoal);
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => setFilter(btn.dataset.filter));
+    });
+    openModalBtn.addEventListener('click', openAddTaskModal);
+    floatingAddBtn.addEventListener('click', openAddTaskModal);
+    closeModalBtn.addEventListener('click', () => addTaskModal.style.display = 'none');
+    closeGoalsModalBtn.addEventListener('click', () => goalsModal.style.display = 'none');
+    cancelDeleteBtn.addEventListener('click', () => deleteModal.style.display = 'none');
+    confirmDeleteBtn.addEventListener('click', deleteTask);
+    prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+    nextMonthBtn.addEventListener('click', () => changeMonth(1));
+    backToCalendarBtn.addEventListener('click', backToCalendar);
+    dailyGoalsBtn.addEventListener('click', openGoalsModal);
+    signInBtn.addEventListener("click", signInWithGoogle);
+
+    // Close modals when clicking outside
+    [addTaskModal, deleteModal, goalsModal].forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    });
+
+    // Functions
+    function initApp() {
+      // Generate calendar for current month
+      generateCalendar(currentMonth, currentYear);
+
+      // Listen for auth state changes
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          // User is signed in
+          currentUser = user;
+          showUserInfo(user);
+          loadTasks();
+          loadGoals();
+          addDailyGoalsAsTasks();
+          scheduleMidnightCheck();
+        } else {
+          // User is signed out
+          currentUser = null;
+          showSignInButton();
+          tasks = [];
+          goals = [];
+          dateTasks = {};
+          renderTasks();
+          updateStats();
+          generateCalendar(currentMonth, currentYear);
+        }
+      });
+    }
+
+    function showUserInfo(user) {
+      authContainer.innerHTML = `
+                <div class="user-info">
+                    <div class="user-avatar">${user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}</div>
+                </div>
+                <button class="auth-btn sign-out" id="sign-out-btn">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            `;
+
+      document.getElementById('sign-out-btn').addEventListener('click', signOut);
+    }
+
+    function showSignInButton() {
+      authContainer.innerHTML = `
+                <button class="auth-in" id="sign-in-btn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            `;
+     document.getElementById('sign-in-btn').addEventListener('click', signInWithGoogle);
+    }
+
+    function signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(() => {
+          showToast('Signed in successfully!');
+        })
+        .catch(error => {
+          showToast(`Error: ${error.message}`, true);
+        });
+    }
+
+    function signOut() {
+      auth.signOut()
+        .then(() => {
+          showToast('Signed out successfully');
+          backToCalendar();
+        })
+        .catch(error => {
+          showToast(`Error: ${error.message}`, true);
+        });
+    }
+
+    function loadTasks() {
+      if (!currentUser) return;
+
+      const userId = currentUser.uid;
+      const tasksRef = database.ref(`users/${userId}/tasks`);
+
+      tasksRef.on('value', (snapshot) => {
+        dateTasks = {};
+        tasks = [];
+        const data = snapshot.val();
+
+        if (data) {
+          Object.keys(data).forEach(dateKey => {
+            const tasksForDate = data[dateKey];
+            dateTasks[dateKey] = [];
+
+            Object.keys(tasksForDate).forEach(taskId => {
+              const task = {
+                id: taskId,
+                ...tasksForDate[taskId]
+              };
+
+              tasks.push(task);
+              dateTasks[dateKey].push(task);
+            });
+          });
+        }
+
+        // Render calendar with updated task status
+        generateCalendar(currentMonth, currentYear);
+
+        // If we're viewing a specific date, render tasks for that date
+        if (selectedDate) {
+          renderTasksForDate(selectedDate);
+        }
+      });
+    }
+
+    function loadGoals() {
+      if (!currentUser) return;
+
+      const userId = currentUser.uid;
+      const goalsRef = database.ref(`users/${userId}/goals`);
+
+      goalsRef.on('value', (snapshot) => {
+        goals = [];
+        const data = snapshot.val();
+
+        if (data) {
+          Object.keys(data).forEach(goalId => {
+            const goal = {
+              id: goalId,
+              ...data[goalId]
+            };
+            goals.push(goal);
+          });
+        }
+
+        renderGoals();
+      });
+    }
+
+    function renderGoals() {
+      if (!currentUser) return;
+
+      goalsList.innerHTML = '';
+
+      if (goals.length === 0) {
+        goalsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bullseye"></i>
+                        <h3>No daily goals yet</h3>
+                        <p>Add your first daily goal below!</p>
+                    </div>
+                `;
+        return;
+      }
+
+      goals.forEach(goal => {
+        const goalEl = document.createElement('li');
+        goalEl.className = 'goal-item';
+        goalEl.innerHTML = `
+                    <div class="goal-content">
+                        <div class="goal-title">
+                            ${goal.name}
+                            <span class="status-badge goal-badge">Daily Goal</span>
+                        </div>
+                        <div class="goal-time">
+                            <i class="far fa-clock"></i>
+                            ${goal.time || 'All day'} • ${goal.priority}
+                        </div>
+                    </div>
+                    <div class="goal-actions">
+                        <button class="action-btn delete-btn" onclick="deleteGoal('${goal.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+        goalsList.appendChild(goalEl);
+      });
+    }
+
+    function openGoalsModal() {
+      if (!currentUser) {
+        showToast('Please sign in to manage daily goals', true);
+        return;
+      }
+
+      goalForm.reset();
+      goalsModal.style.display = 'flex';
+    }
+
+    function addGoal(e) {
+      e.preventDefault();
+
+      if (!currentUser) {
+        showToast('Please sign in to add goals', true);
+        return;
+      }
+
+      const goal = {
+        name: goalNameInput.value,
+        time: goalTimeInput.value || '00:00',
+        priority: goalPriorityInput.value,
+        createdAt: new Date().toISOString()
+      };
+
+      const userId = currentUser.uid;
+      const newGoalRef = database.ref(`users/${userId}/goals`).push();
+      newGoalRef.set(goal);
+
+      // Reset form
+      goalForm.reset();
+      goalNameInput.focus();
+
+      // Show success notification
+      showToast('Daily goal added!');
+    }
+
+    function deleteGoal(goalId) {
+      goalToDelete = goalId;
+      deleteGoalModal.style.display = 'flex';
+    }
+
+
+    function addDailyGoalsAsTasks() {
+      if (!currentUser) return;
+
+      const userId = currentUser.uid;
+      const goalsRef = database.ref(`users/${userId}/goals`);
+      const tasksRef = database.ref(`users/${userId}/tasks`);
+
+      // Get all tasks to find last date present
+      tasksRef.once('value').then(taskSnapshot => {
+        const taskData = taskSnapshot.val() || {};
+        const goalDates = Object.keys(taskData).sort(); // Get sorted dates
+        const lastDate = goalDates.length ? new Date(goalDates[goalDates.length - 1]) : null;
+        const today = new Date();
+
+        // Start from yesterday or 7 days ago if never logged in
+        let startDate = lastDate ? new Date(lastDate) : new Date(today);
+        startDate.setDate(startDate.getDate() + 1); // next day after last
+
+        goalsRef.once('value').then(goalsSnapshot => {
+          const goals = goalsSnapshot.val();
+          if (!goals) return;
+
+          // Add for each missing day up to today
+          while (startDate <= today) {
+            const dateKey = formatDate(startDate);
+            const dayTasksRef = database.ref(`users/${userId}/tasks/${dateKey}`);
+
+            dayTasksRef.once('value').then(daySnapshot => {
+              const existingTasks = daySnapshot.val() || {};
+
+              Object.keys(goals).forEach(goalId => {
+                const goal = goals[goalId];
+
+                const alreadyExists = Object.values(existingTasks).some(
+                  t => t.isDailyGoal && t.goalName === goal.name
+                );
+
+                if (!alreadyExists) {
+                  const newTask = {
+                    name: goal.name,
+                    time: goal.time || '00:00',
+                    priority: goal.priority || 'normal',
+                    completed: false,
+                    createdAt: new Date().toISOString(),
+                    isDailyGoal: true,
+                    goalName: goal.name
+                  };
+                  dayTasksRef.push(newTask);
+                }
+              });
+            });
+
+            // Move to next day
+            startDate.setDate(startDate.getDate() + 1);
+          }
+        });
+      });
+    }
+
+
+    function scheduleMidnightCheck() {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0); // Set to next midnight
+
+      const msUntilMidnight = midnight - now;
+
+      setTimeout(() => {
+        addDailyGoalsAsTasks();
+        // Schedule next check
+        scheduleMidnightCheck();
+      }, msUntilMidnight);
+    }
+
+    function openAddTaskModal(editing = false, task = null, date = null) {
+  if (!currentUser) {
+    showToast('Please sign in to add tasks', true);
+    return;
+  }
+
+  if (!selectedDate && !editing) {
+    showToast('Please select a date first', true);
+    return;
+  }
+
+  taskForm.reset();
+  taskNameInput.focus();
+  if (!editing) {
+    const now = new Date();
+    taskTimeInput.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    taskToEdit = null;
+  } else if (task && date) {
+  taskNameInput.value = task.name;
+  taskTimeInput.value = task.time;
+  taskPriorityInput.value = task.priority;
+  taskToEdit = { date, id: task.id };
+} else {
+  console.warn("Edit mode called without valid task data");
+  taskToEdit = null;
+}
+
+  addTaskModal.style.display = 'flex';
+}
+
+
+    function addTask(e) {
+  e.preventDefault();
+
+  if (!currentUser) return;
+
+  const taskData = {
+    name: taskNameInput.value,
+    time: taskTimeInput.value,
+    priority: taskPriorityInput.value,
+    completed: false,
+    createdAt: new Date().toISOString()
+  };
+
+  const userId = currentUser.uid;
+
+  if (taskToEdit) {
+    const { date, id } = taskToEdit;
+    const taskRef = database.ref(`users/${userId}/tasks/${date}/${id}`);
+    taskRef.update(taskData).then(() => {
+      showToast('Task updated!');
+    });
+    taskToEdit = null;
+  } else {
+    if (!selectedDate) {
+      showToast('Please select a date first', true);
+      return;
+    }
+    const dateKey = selectedDate;
+    const newTaskRef = database.ref(`users/${userId}/tasks/${dateKey}`).push();
+    newTaskRef.set(taskData);
+    showToast('Task added successfully!');
+  }
+
+  addTaskModal.style.display = 'none';
+  taskForm.reset();
+}
+
+
+    function renderTasksForDate(date) {
+      const tasksForDate = dateTasks[date] || [];
+
+      if (tasksForDate.length === 0) {
+        taskList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>No tasks for this date</h3>
+                        <p>Add your first task to get started!</p>
+                    </div>
+                `;
+        updateStatsForDate(tasksForDate);
+        return;
+      }
+
+      // Filter tasks based on current filter
+      let filteredTasks = tasksForDate;
+      if (currentFilter === 'active') {
+        filteredTasks = tasksForDate.filter(task => !task.completed);
+      } else if (currentFilter === 'completed') {
+        filteredTasks = tasksForDate.filter(task => task.completed);
+      }
+
+      // Sort tasks by time
+      filteredTasks.sort((a, b) => {
+        const timeA = a.time || '00:00';
+        const timeB = b.time || '00:00';
+        return timeA.localeCompare(timeB);
+      });
+
+      taskList.innerHTML = filteredTasks.map(task => `
+                <li class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}" data-date="${date}">
+                    <div class="task-content">
+                        <div class="task-title ${task.completed ? 'completed' : ''}">
+                            ${task.name}
+                            ${task.isDailyGoal ? `<span class="status-badge goal-badge">Daily Goal</span>` : ''}
+                            <span class="status-badge ${task.completed ? 'completed-badge' :
+          task.priority === 'high' ? 'pending-badge' :
+            task.priority === 'urgent' ? 'urgent-badge' : ''}">
+                                ${task.completed ? 'Completed' :
+          task.priority === 'high' ? 'High Priority' :
+            task.priority === 'urgent' ? 'Urgent!' : 'Normal'}
+                            </span>
+                        </div>
+                        <div class="task-time">
+                            <i class="far fa-clock"></i>
+                            ${task.time || 'All day'}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn complete-btn" onclick="toggleComplete('${date}', '${task.id}')">
+                            <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
+                        </button>
+                        <button class="action-btn edit-btn" onclick="openEditTaskModal('${date}', '${task.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="openDeleteModal('${date}', '${task.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join('');
+
+      updateStatsForDate(tasksForDate);
+    }
+
+    function updateStatsForDate(tasksForDate) {
+      if (!tasksForDate) return;
+
+      totalTasksEl.textContent = tasksForDate.length;
+      const completed = tasksForDate.filter(task => task.completed).length;
+      completedTasksEl.textContent = completed;
+      pendingTasksEl.textContent = tasksForDate.length - completed;
+    }
+
+    function toggleComplete(date, taskId) {
+      if (!currentUser) return;
+
+      const userId = currentUser.uid;
+      const taskRef = database.ref(`users/${userId}/tasks/${date}/${taskId}`);
+
+      taskRef.transaction(task => {
+        if (task) {
+          task.completed = !task.completed;
+        }
+        return task;
+      }).then(result => {
+        const updatedTask = result.snapshot.val();
+        const action = updatedTask.completed ? 'completed' : 'marked as active';
+        showToast(`Task ${action}!`);
+      });
+
+    }
+
+    function openDeleteModal(date, taskId) {
+      taskToDelete = { date, id: taskId };
+      deleteModal.style.display = 'flex';
+    }
+    function openEditTaskModal(date, taskId) {
+  const task = (dateTasks[date] || []).find(t => t.id === taskId);
+  if (task) {
+    openAddTaskModal(true, task, date);
+  }
+}
+window.openEditTaskModal = openEditTaskModal;
+
+
+    function deleteTask() {
+      if (taskToDelete && currentUser) {
+        const userId = currentUser.uid;
+        const { date, id } = taskToDelete;
+        const taskRef = database.ref(`users/${userId}/tasks/${date}/${id}`);
+
+        // Get task name before deleting for toast notification
+        taskRef.once('value', (snapshot) => {
+          const task = snapshot.val();
+          if (task) {
+            taskRef.remove()
+              .then(() => {
+                showToast(`"${task.name}" deleted!`);
+                deleteModal.style.display = 'none';
+              });
+          }
+        });
+      }
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+
+      // Update active button
+      filterButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+
+      if (selectedDate) {
+        renderTasksForDate(selectedDate);
+      }
+    }
+
+    function showToast(message, isError = false) {
+      toastEl.textContent = message;
+      toastEl.className = 'toast';
+      toastEl.classList.add('show');
+      if (isError) toastEl.classList.add('error');
+
+      setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, 3000);
+    }
+
+    // Calendar Functions
+    function generateCalendar(month, year) {
+      // Clear existing calendar
+      calendarGrid.innerHTML = '';
+
+      // Set calendar title
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+      calendarTitle.textContent = `${monthNames[month]} ${year}`;
+
+      // Create day headers
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      dayNames.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-day-header';
+        dayHeader.textContent = day;
+        calendarGrid.appendChild(dayHeader);
+      });
+
+      // Get first day of month and number of days
+      const firstDay = new Date(year, month, 1);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // Create empty cells for days before first day of month
+      for (let i = 0; i < firstDay.getDay(); i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-day empty';
+        calendarGrid.appendChild(emptyCell);
+      }
+
+      // Create cells for each day of the month
+      const today = new Date();
+      const todayDateString = formatDate(today);
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateString = formatDate(date);
+
+        // Check if this date has tasks
+        const hasTasks = dateTasks[dateString] && dateTasks[dateString].length > 0;
+        const completedTasks = hasTasks ? dateTasks[dateString].filter(task => task.completed).length : 0;
+        const allCompleted = hasTasks && completedTasks === dateTasks[dateString].length;
+        const hasPending = hasTasks && completedTasks < dateTasks[dateString].length;
+
+        // Create day cell
+        const dayCell = document.createElement('div');
+        dayCell.className = 'calendar-day';
+
+        // Add classes based on task status
+        if (dateString === todayDateString) dayCell.classList.add('today');
+        if (hasTasks) dayCell.classList.add('has-tasks');
+        if (allCompleted) dayCell.classList.add('all-completed');
+        if (hasPending) dayCell.classList.add('has-pending');
+
+        // Day number
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'day-number';
+        dayNumber.textContent = day;
+
+        // Task indicator
+        const taskIndicator = document.createElement('div');
+        taskIndicator.className = 'task-indicator';
+
+        if (hasTasks) {
+          taskIndicator.innerHTML = `
+                        <span class="completed-indicator">${completedTasks}✓</span>
+                        <span class="pending-indicator">${dateTasks[dateString].length - completedTasks}!</span>
+                    `;
+        }
+
+        dayCell.appendChild(dayNumber);
+        dayCell.appendChild(taskIndicator);
+
+        // Add click event to view tasks for this day
+        dayCell.addEventListener('click', () => viewTasksForDate(date));
+
+        calendarGrid.appendChild(dayCell);
+      }
+    }
+
+    function changeMonth(offset) {
+      currentMonth += offset;
+
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+
+      generateCalendar(currentMonth, currentYear);
+    }
+
+    function viewTasksForDate(date) {
+      if (!currentUser) {
+        showToast('Please sign in to view tasks', true);
+        return;
+      }
+
+      selectedDate = formatDate(date);
+      selectedDateEl.textContent = date.toDateString();
+
+      // Show task interface and hide calendar
+      calendarView.style.display = 'none';
+      taskInterface.style.display = 'block';
+      backToCalendarBtn.style.display = 'flex';
+
+      // Render tasks for selected date
+      renderTasksForDate(selectedDate);
+    }
+
+    function backToCalendar() {
+      selectedDate = null;
+
+      // Show calendar and hide task interface
+      calendarView.style.display = 'block';
+      taskInterface.style.display = 'none';
+      backToCalendarBtn.style.display = 'none';
+
+      // Update calendar to reflect any changes
+      generateCalendar(currentMonth, currentYear);
+    }
+
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    confirmDeleteGoalBtn.addEventListener('click', () => {
+      if (!currentUser || !goalToDelete) return;
+
+      const userId = currentUser.uid;
+      database.ref(`users/${userId}/goals/${goalToDelete}`).remove()
+        .then(() => {
+          showToast('Daily goal deleted!');
+          deleteGoalModal.style.display = 'none';
+          goalToDelete = null;
+        });
+    });
+
+    cancelDeleteGoalBtn.addEventListener('click', () => {
+      deleteGoalModal.style.display = 'none';
+      goalToDelete = null;
+    });
+
+
+    window.toggleComplete = toggleComplete;
+    window.openDeleteModal = openDeleteModal;
+    window.deleteGoal = deleteGoal;
+  </script>
+</body>
+
+</html>
