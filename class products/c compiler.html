@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="c.css">
+  <link rel="icon" type="image/png" href="c.png?v=2">
+  <title>Compiler</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --secondary: #3498db;
+      --accent: #e74c3c;
+      --light: #ecf0f1;
+      --dark: #2c3e50;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --info: #1abc9c;
+      --code-bg: #1e1e1e;
+      --output-bg: #2d2d30;
+      --header-height: 60px;
+      --sidebar-width: 240px;
+      --transition: all 0.3s ease;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a2a3a, #2c3e50);
+      color: var(--light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      background-color: rgba(26, 32, 44, 0.95);
+      padding: 0 20px;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(5px);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: white;
+      font-weight: 700;
+      font-size: 1.5rem;
+      transition: var(--transition);
+    }
+    
+    .logo:hover {
+      color: var(--secondary);
+    }
+    
+    .logo img {
+      width: 40px;
+      height: 32px;
+    }
+    
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .button {
+      background: linear-gradient(to right, var(--secondary), var(--info));
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow);
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .button i {
+      font-size: 0.9rem;
+    }
+    
+    .button.run {
+      background: linear-gradient(to right, var(--success), #27ae60);
+    }
+    
+    .button.note {
+      background: linear-gradient(to right, var(--warning), #e67e22);
+    }
+    
+    .main-container {
+      display: flex;
+      flex: 1;
+      padding: 20px;
+      gap: 20px;
+    }
+    
+    .editor-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(30, 30, 30, 0.8);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(5px);
+    }
+    
+    .editor-header {
+      padding: 15px 20px;
+      background: rgba(40, 40, 40, 0.9);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .editor-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--light);
+      font-weight: 600;
+    }
+    
+    .editor-title i {
+      color: var(--secondary);
+    }
+    
+    .zoom-controls {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .zoom-controls button {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: var(--light);
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .zoom-controls button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .code-wrapper {
+      position: relative;
+      flex: 1;
+    }
+    
+    .CodeMirror {
+      height: 100%;
+      font-size: 16px;
+      background: var(--code-bg);
+      color: #f0f0f0;
+    }
+    /* Change line number gutter background */
+.CodeMirror-gutters {
+  background: #1a1a1a !important; /* Dark gray background */
+  border-right: 1px solid #444 !important; /* Right border color */
+}
+
+/* Change line number text color */
+.CodeMirror-linenumber {
+  color: #888 !important; /* Light gray text */
+  padding-left: 10px !important; /* Adjust padding if needed */
+}
+
+/* Change current line highlight */
+.CodeMirror-activeline-background {
+  background: rgba(255, 255, 255, 0.05) !important; /* Very subtle highlight */
+}
+.CodeMirror-cursor {
+  border-left: 2px solid #ffffff !important; 
+}
+    
+    #resizer {
+      height: 10px;
+      background: rgba(52, 152, 219, 0.5);
+      cursor: ns-resize;
+      transition: background 0.2s ease;
+    }
+    
+    #resizer:hover {
+      background: var(--secondary);
+    }
+    
+    .output-container {
+      margin-top: 20px;
+      background: rgba(30, 30, 30, 0.8);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(5px);
+    }
+    
+    .output-header {
+      padding: 15px 20px;
+      background: rgba(40, 40, 40, 0.9);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+    
+    .output-header i {
+      color: var(--success);
+    }
+    
+    #output {
+      padding: 20px;
+      min-height: 150px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: var(--output-bg);
+      font-family: 'Consolas', 'Monaco', monospace;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    
+    #input-container {
+      padding: 20px;
+      background: rgba(30, 30, 30, 0.8);
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(5px);
+    }
+    
+    .input-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      color: var(--light);
+      font-weight: 600;
+    }
+    
+    .input-header i {
+      color: var(--warning);
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 10px;
+    }
+    
+    #userInput {
+      flex: 1;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--light);
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 16px;
+    }
+    
+    #userInput:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--secondary);
+    }
+    
+    .note-container {
+      background: linear-gradient(135deg, #e67e22, #d35400);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: var(--shadow);
+    }
+    
+    .note-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    
+    .note-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+    
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .note-content {
+      color: white;
+      line-height: 1.6;
+    }
+    
+    .note-content b {
+      color: #2c3e50;
+    }
+    
+    .status-bar {
+      padding: 10px 20px;
+      background: rgba(40, 40, 40, 0.9);
+      color: #95a5a6;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+      }
+      
+      .controls {
+        gap: 8px;
+      }
+      
+      .button span {
+        display: none;
+      }
+      
+      .button i {
+        margin-right: 0;
+      }
+    }
+    /* Make all code text white */
+.CodeMirror span {
+  color: white !important;
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="https://origine-official.netlify.app/">
+      <img src="c.png" alt="RIGINE Logo">
+      <span>Compiler</span>
+    </a>
+    
+    <div class="controls">
+      <button class="button run" onclick="detectScanf()">
+        <i class="fas fa-play"></i>
+        <span>Run</span>
+      </button>
+      <button class="button note" onclick="showdiv()">
+        <i class="fas fa-info-circle"></i>
+        <span>Note</span>
+      </button>
+    </div>
+  </header>
+  
+  <div class="main-container">
+    <div class="editor-container">
+      <div class="editor-header">
+        <div class="editor-title">
+          <i class="fas fa-code"></i>
+          <span>main.c</span>
+        </div>
+        
+        <div class="zoom-controls">
+          <button onclick="zoomIn()" title="Zoom In">
+            <i class="fas fa-search-plus"></i>
+          </button>
+          <button onclick="zoomOut()" title="Zoom Out">
+            <i class="fas fa-search-minus"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="code-wrapper">
+        <textarea id="editor"></textarea>
+      </div>
+      
+      <div id="resizer"></div>
+    </div>
+    
+    
+  </div>
+  <div class="output-container">
+      <div class="output-header">
+        <i class="fas fa-terminal"></i>
+        <span>Output</span>
+      </div>
+      <div id="output"></div>
+    </div>
+  
+  <div id="input-container" style="display: none;">
+    <div class="input-header">
+      <i class="fas fa-keyboard"></i>
+      <span>Enter Input Values</span>
+    </div>
+    <div class="input-group">
+      <input id="userInput" type="text" placeholder="Enter values separated by commas..."/>
+      <button class="button" onclick="submitNextInput()">
+        <i class="fas fa-paper-plane"></i>
+        <span>Submit</span>
+      </button>
+    </div>
+  </div>
+  
+  <div id="display" class="note-container" style="display: none;">
+    <div class="note-header">
+      <div class="note-title">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Important Note</span>
+      </div>
+      <button class="close-btn" onclick="showdiv()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="note-content">
+      <p>In this code compiler, if your code is correct, no errors will be shown. However, if your code is incorrect, an error message will appear in the output.</p>
+      <p>Please note that our compiler does not support sequential output. This means you must enter all required inputs in the input box that appears after you click the "Run" button.</p>
+      <p>Your final output will be displayed after execution.</p>
+      <p><b>Note:</b> Due to the non-sequential input method, the behavior may differ from traditional compilers. This does <b>not</b> necessarily mean your code is incorrect. Your code is saved locally so even if you refresh the page your code will be shown.</p>
+    </div>
+  </div>
+  
+  <div class="status-bar">
+    <div class="status-item">
+      <i class="fas fa-save"></i>
+      <span>Code is automatically saved</span>
+    </div>
+    <div class="status-item">
+      <i class="fas fa-lightbulb"></i>
+      <span>Press Ctrl+Space for autocomplete</span>
+    </div>
+  </div>
+
+  <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+      mode: "text/x-csrc",
+      lineNumbers: true,
+      theme: "default",
+      matchBrackets: true,
+      autoCloseBrackets: "()[]{}''\"\"<>",
+      extraKeys: { "Ctrl-Space": "autocomplete" }
+    });
+
+    // Set default font size
+    let currentFontSize = 16;
+    editor.getWrapperElement().style.fontSize = currentFontSize + "px";
+
+    function zoomIn() {
+      if (currentFontSize < 30) {
+        currentFontSize += 2;
+        editor.getWrapperElement().style.fontSize = currentFontSize + "px";
+        editor.refresh();
+      }
+    }
+
+    function zoomOut() {
+      if (currentFontSize > 12) {
+        currentFontSize -= 2;
+        editor.getWrapperElement().style.fontSize = currentFontSize + "px";
+        editor.refresh();
+      }
+    }
+
+    // Resizing logic
+    const resizer = document.getElementById("resizer");
+    const wrapper = editor.getWrapperElement();
+    let isDragging = false;
+
+    resizer.addEventListener("mousedown", function(e) {
+      isDragging = true;
+      document.body.style.cursor = "ns-resize";
+    });
+
+    window.addEventListener("mousemove", function(e) {
+      if (!isDragging) return;
+      const newHeight = e.clientY - wrapper.getBoundingClientRect().top;
+      if (newHeight > 100 && newHeight < window.innerHeight - 100) {
+        wrapper.style.height = newHeight + "px";
+        editor.refresh();
+      }
+    });
+
+    window.addEventListener("mouseup", function() {
+      isDragging = false;
+      document.body.style.cursor = "default";
+    });
+
+    // Load saved code and output from localStorage
+    window.onload = function() {
+      const savedCode = localStorage.getItem("savedCode");
+      const savedOutput = localStorage.getItem("savedOutput");
+      if (savedCode) {
+        editor.setValue(savedCode);
+      }
+      if (savedOutput) {
+        document.getElementById("output").innerHTML = savedOutput;
+      }
+    };
+
+    const cKeywords = [
+      "int", "float", "char", "double", "void", "return",
+      "if", "else", "while", "for", "do", "switch", "case", "default", "continue;",
+      "printf", "scanf", "gets", "puts", "sizeof", "struct", "enum",
+      "#include<math.h>", "#include<stdio.h>", "#include<stdlib.h>", "const", "static", "extern", "volatile", "register", "goto"
+    ];
+
+    CodeMirror.registerHelper("hint", "c", function(editor) {
+      var cur = editor.getCursor();
+      var token = editor.getTokenAt(cur);
+      var start = token.start;
+      var end = token.end;
+      var word = token.string;
+      var list = cKeywords.filter(function(item) {
+        return item.startsWith(word);
+      });
+      return {
+        list: list,
+        from: CodeMirror.Pos(cur.line, start),
+        to: CodeMirror.Pos(cur.line, end)
+      };
+    });
+
+    editor.on("inputRead", function(cm, event) {
+      if (!cm.state.completionActive && event.text[0].match(/\w/)) {
+        cm.showHint({ hint: CodeMirror.hint.c });
+      }
+    });
+
+    let inputQueue = [];
+
+    function detectScanf() {
+      let code = editor.getValue();
+      localStorage.setItem("savedCode", code);
+      let matches = code.match(/scanf\s*\(\s*"[^"]*"\s*,\s*&[^)]+\)/g) || [];
+      document.getElementById("output").innerHTML = "";
+      if (matches.length > 0) {
+        document.getElementById("input-container").style.display = "block";
+        document.getElementById("userInput").focus();
+      } else {
+        compileCode("");
+      }
+    }
+
+    function submitNextInput() {
+      let inputText = document.getElementById("userInput").value.trim();
+      if (inputText === "") return;
+      compileCode(inputText);
+      document.getElementById("userInput").value = "";
+      document.getElementById("input-container").style.display = "none";
+    }
+
+    function compileCode(stdin) {
+      var code = editor.getValue();
+      $.ajax({
+        url: "https://emkc.org/api/v2/piston/execute",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+          language: "c",
+          version: "10.2.0",
+          files: [{ content: code }],
+          stdin: stdin
+        }),
+        success: function(response) {
+          let output = response.run.output;
+          localStorage.setItem("savedOutput", output.replace(/\n/g, "<br>"));
+          document.getElementById("output").innerHTML = output.replace(/\n/g, "<br>") || "No output received.";
+        },
+        error: function(xhr) {
+          document.getElementById("output").innerHTML = "Error running the code. Check console for details.";
+        }
+      });
+    }
+    
+    function showdiv() {
+      var div = document.getElementById("display");
+      div.style.display = (div.style.display === "none" || div.style.display === "") ? "block" : "none";
+    }
+  </script>
+</body>
+</html>

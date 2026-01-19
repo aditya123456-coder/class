@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="js.png?v=2">
+    <title> Compiler</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: #f0f0f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0 30px;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .feature i {
+            color: #00f2fe;
+        }
+        
+        .compiler-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(20, 30, 48, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .editor-container {
+            display: flex;
+            gap: 20px;
+            min-height: 500px;
+        }
+        
+        @media (max-width: 900px) {
+            .editor-container {
+                flex-direction: column;
+            }
+        }
+        
+        .editor-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(30, 40, 60, 0.9);
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .panel-title i {
+            color: #4facfe;
+        }
+        
+        .editor {
+            flex: 1;
+            background: #1e2b3e;
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        textarea, .output, .console {
+            width: 100%;
+            height: 100%;
+            background: #1e2b3e;
+            color: #f0f0f0;
+            padding: 20px;
+            font-size: 16px;
+            font-family: 'Fira Code', monospace;
+            border: none;
+            outline: none;
+            resize: none;
+            line-height: 1.5;
+        }
+        
+        .output, .console {
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .console {
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .console.error {
+            color: #ff6b6b;
+        }
+        
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .suggestion-header {
+            padding: 10px 15px;
+            background: rgba(40, 50, 70, 0.9);
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .status {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .status.success {
+            color: #00d9a6;
+        }
+        
+        .status.error {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><img style="width: 40px; margin-bottom: -5px;" src="js.png" alt=""></i> Compiler</h1>
+            <p>Write, compile, and debug JavaScript code with real-time suggestions and output</p>
+            
+            <div class="features">
+                <div class="feature"><i class="fas fa-check-circle"></i> Intelligent Code Suggestions</div>
+                <div class="feature"><i class="fas fa-bolt"></i> Real-time Output</div>
+                <div class="feature"><i class="fas fa-bug"></i> Error Highlighting</div>
+                <div class="feature"><i class="fas fa-terminal"></i> Interactive Console</div>
+                <div class="feature"><i class="fas fa-magic"></i> Syntax Highlighting</div>
+            </div>
+        </header>
+        
+        <div class="compiler-container">
+            <div class="editor-container">
+                <div class="editor-section">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-edit"></i> Code Editor
+                        </div>
+                        <div class="status" id="editor-status">Ready</div>
+                    </div>
+                    <div class="editor">
+                        <textarea id="code" spellcheck="false">// Welcome to the JavaScript Compiler!
+// Try writing some code and see the magic happen
+
+function factorial(n) {
+  if (n === 0 || n === 1) {
+    return 1;
+  }
+  return n * factorial(n - 1);
+}
+
+console.log("Factorial of 5 is: " + factorial(5));
+
+// Create a simple object
+const person = {
+  name: "Alice",
+  age: 28,
+  hobbies: ["coding", "reading", "hiking"]
+};
+
+console.log(person);
+
+// Arrow function example
+const multiply = (a, b) => a * b;
+console.log(`5 * 8 = ${multiply(5, 8)}`);</textarea>
+                    </div>
+                </div>
+                
+                <div class="editor-section">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-play-circle"></i> Output
+                        </div>
+                        <div class="status" id="output-status">No output</div>
+                    </div>
+                    <div class="editor">
+                        <div class="output" id="output"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="editor-section">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-terminal"></i> Console
+                    </div>
+                    <div class="status" id="console-status">No logs</div>
+                </div>
+                <div class="editor">
+                    <div class="console" id="console"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" id="runBtn">
+                <i class="fas fa-play"></i> Run Code
+            </button>
+            <button class="btn btn-clear" id="clearBtn">
+                <i class="fas fa-broom"></i> Clear Console
+            </button>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="logo">JSCompiler</div>
+        <p>Advanced JavaScript Compiler with Real-time Suggestions and Debugging Tools</p>
+        <p>&copy; 2025 Class | All rights reserved</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const codeTextarea = document.getElementById('code');
+            const outputDiv = document.getElementById('output');
+            const consoleDiv = document.getElementById('console');
+            const runBtn = document.getElementById('runBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const suggestionsDiv = document.getElementById('suggestions');
+            const editorStatus = document.getElementById('editor-status');
+            const outputStatus = document.getElementById('output-status');
+            const consoleStatus = document.getElementById('console-status');
+            
+            // Keywords and suggestions
+            const jsKeywords = [
+                'function', 'if', 'else', 'return', 'for', 'while', 'do', 'switch', 
+                'case', 'break', 'continue', 'try', 'catch', 'finally', 'throw', 
+                'var', 'let', 'const', 'new', 'this', 'class', 'extends', 'super', 
+                'import', 'export', 'default', 'async', 'await', 'typeof', 'instanceof',
+                'true', 'false', 'null', 'undefined', 'NaN', 'Infinity'
+            ];
+            
+            const jsBuiltins = [
+                'console', 'window', 'document', 'Array', 'String', 'Object', 
+                'Number', 'Boolean', 'Date', 'Math', 'JSON', 'Promise', 'Set', 
+                'Map', 'RegExp', 'Error', 'parseInt', 'parseFloat', 'isNaN', 
+                'isFinite', 'eval', 'encodeURI', 'decodeURI'
+            ];
+            
+            const jsMethods = [
+                'log', 'warn', 'error', 'info', 'debug', 'table', 'group', 
+                'groupEnd', 'time', 'timeEnd', 'assert', 'count', 'clear',
+                'length', 'push', 'pop', 'shift', 'unshift', 'slice', 'splice',
+                'concat', 'join', 'reverse', 'sort', 'map', 'filter', 'reduce',
+                'forEach', 'find', 'findIndex', 'includes', 'indexOf', 'split',
+                'replace', 'toUpperCase', 'toLowerCase', 'trim', 'charAt',
+                'substring', 'toString', 'toFixed', 'toPrecision', 'getTime',
+                'getFullYear', 'getMonth', 'getDate', 'getHours', 'getMinutes',
+                'getSeconds', 'getMilliseconds', 'getDay', 'getTimezoneOffset'
+            ];
+            
+            // Initialize with sample output
+            outputDiv.innerHTML = `// Output will appear here after code execution\n\n// Try clicking "Run Code" to see your results!`;
+            consoleDiv.innerHTML = `// Console logs will appear here\n\n// Errors and debug messages will be shown in this panel`;
+            
+            // Run button click handler
+            runBtn.addEventListener('click', function() {
+                runCode();
+            });
+            
+            // Clear console button
+            clearBtn.addEventListener('click', function() {
+                consoleDiv.innerHTML = '';
+                consoleStatus.textContent = 'Cleared';
+                setTimeout(() => consoleStatus.textContent = 'No logs', 2000);
+            });
+            
+            // Suggestion functionality
+            codeTextarea.addEventListener('input', showSuggestions);
+            codeTextarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    if (suggestionsDiv.style.display === 'block') {
+                        const active = document.querySelector('.suggestion-item.active');
+                        if (active) {
+                            insertSuggestion(active);
+                        }
+                    } else {
+                        // Regular tab behavior
+                        const start = this.selectionStart;
+                        const end = this.selectionEnd;
+                        
+                        this.value = this.value.substring(0, start) + '\t' + this.value.substring(end);
+                        this.selectionStart = this.selectionEnd = start + 1;
+                    }
+                }
+                
+                if (e.key === 'ArrowDown' && suggestionsDiv.style.display === 'block') {
+                    e.preventDefault();
+                    const items = document.querySelectorAll('.suggestion-item');
+                    let active = document.querySelector('.suggestion-item.active');
+                    
+                    if (!active) {
+                        items[0].classList.add('active');
+                    } else {
+                        active.classList.remove('active');
+                        if (active.nextElementSibling) {
+                            active.nextElementSibling.classList.add('active');
+                        } else {
+                            items[0].classList.add('active');
+                        }
+                    }
+                }
+                
+                if (e.key === 'ArrowUp' && suggestionsDiv.style.display === 'block') {
+                    e.preventDefault();
+                    const items = document.querySelectorAll('.suggestion-item');
+                    let active = document.querySelector('.suggestion-item.active');
+                    
+                    if (!active) {
+                        items[items.length - 1].classList.add('active');
+                    } else {
+                        active.classList.remove('active');
+                        if (active.previousElementSibling) {
+                            active.previousElementSibling.classList.add('active');
+                        } else {
+                            items[items.length - 1].classList.add('active');
+                        }
+                    }
+                }
+                
+                if (e.key === 'Enter' && suggestionsDiv.style.display === 'block') {
+                    e.preventDefault();
+                    const active = document.querySelector('.suggestion-item.active');
+                    if (active) {
+                        insertSuggestion(active);
+                    }
+                }
+                
+                if (e.key === 'Escape') {
+                    hideSuggestions();
+                }
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!suggestionsDiv.contains(e.target) && e.target !== codeTextarea) {
+                    hideSuggestions();
+                }
+            });
+            
+            // Function to run code
+            function runCode() {
+                // Clear previous outputs
+                outputDiv.innerHTML = '';
+                consoleDiv.innerHTML = '';
+                outputStatus.textContent = 'Running...';
+                consoleStatus.textContent = 'Running...';
+                
+                try {
+                    // Capture console.log
+                    const originalLog = console.log;
+                    const originalError = console.error;
+                    const originalWarn = console.warn;
+                    const originalInfo = console.info;
+                    
+                    console.log = function() {
+                        logToConsole('log', arguments);
+                        originalLog.apply(console, arguments);
+                    };
+                    
+                    console.error = function() {
+                        logToConsole('error', arguments);
+                        originalError.apply(console, arguments);
+                    };
+                    
+                    console.warn = function() {
+                        logToConsole('warn', arguments);
+                        originalWarn.apply(console, arguments);
+                    };
+                    
+                    console.info = function() {
+                        logToConsole('info', arguments);
+                        originalInfo.apply(console, arguments);
+                    };
+                    
+                    // Execute the code
+                    const code = codeTextarea.value;
+                    const result = eval(code);
+                    
+                    // Display result if it's not undefined
+                    if (result !== undefined) {
+                        outputDiv.textContent = result;
+                    }
+                    
+                    outputStatus.classList.remove('error');
+                    outputStatus.classList.add('success');
+                    outputStatus.textContent = 'Execution successful';
+                    
+                    consoleStatus.textContent = 'Logs available';
+                    
+                    // Restore original console methods
+                    setTimeout(() => {
+                        console.log = originalLog;
+                        console.error = originalError;
+                        console.warn = originalWarn;
+                        console.info = originalInfo;
+                    }, 100);
+                    
+                } catch (error) {
+                    outputDiv.innerHTML = `<span class="error">${error.message}</span>`;
+                    consoleDiv.innerHTML += `<div class="console error">Error: ${error.message}</div>`;
+                    
+                    outputStatus.classList.remove('success');
+                    outputStatus.classList.add('error');
+                    outputStatus.textContent = 'Execution failed';
+                    
+                    consoleStatus.textContent = 'Errors found';
+                }
+            }
+            
+            // Function to log to console div
+            function logToConsole(type, args) {
+                const message = Array.from(args).map(arg => {
+                    if (typeof arg === 'object') {
+                        try {
+                            return JSON.stringify(arg, null, 2);
+                        } catch (e) {
+                            return String(arg);
+                        }
+                    }
+                    return arg;
+                }).join(' ');
+                
+                const div = document.createElement('div');
+                div.className = `console ${type}`;
+                
+                let icon = '';
+                switch(type) {
+                    case 'log': icon = '<i class="fas fa-info-circle"></i>'; break;
+                    case 'error': icon = '<i class="fas fa-exclamation-circle"></i>'; break;
+                    case 'warn': icon = '<i class="fas fa-exclamation-triangle"></i>'; break;
+                    case 'info': icon = '<i class="fas fa-info-circle"></i>'; break;
+                }
+                
+                div.innerHTML = `${icon} ${message}`;
+                consoleDiv.appendChild(div);
+                
+                // Scroll to bottom
+                consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            }
+            
+            // Function to show suggestions
+            function showSuggestions() {
+                const cursorPos = codeTextarea.selectionStart;
+                const textBeforeCursor = codeTextarea.value.substring(0, cursorPos);
+                const words = textBeforeCursor.split(/[^\w\.]/);
+                const currentWord = words[words.length - 1];
+                
+                if (!currentWord) {
+                    hideSuggestions();
+                    return;
+                }
+                
+                const lastDot = currentWord.lastIndexOf('.');
+                let prefix = '';
+                let searchTerm = currentWord;
+                
+                if (lastDot !== -1) {
+                    prefix = currentWord.substring(0, lastDot + 1);
+                    searchTerm = currentWord.substring(lastDot + 1);
+                }
+                
+                let matches = [];
+                
+                if (prefix) {
+                    // If we have a prefix (like "console."), suggest methods
+                    matches = jsMethods
+                        .filter(method => method.startsWith(searchTerm))
+                        .map(method => ({ 
+                            text: prefix + method, 
+                            type: 'method',
+                            icon: 'fa-cube'
+                        }));
+                } else {
+                    // Otherwise suggest keywords and builtins
+                    const keywordMatches = jsKeywords
+                        .filter(keyword => keyword.startsWith(searchTerm))
+                        .map(keyword => ({ 
+                            text: keyword, 
+                            type: 'keyword',
+                            icon: 'fa-key'
+                        }));
+                        
+                    const builtinMatches = jsBuiltins
+                        .filter(builtin => builtin.startsWith(searchTerm))
+                        .map(builtin => ({ 
+                            text: builtin, 
+                            type: 'builtin',
+                            icon: 'fa-cube'
+                        }));
+                    
+                    matches = [...keywordMatches, ...builtinMatches];
+                }
+                
+                if (matches.length === 0) {
+                    hideSuggestions();
+                    return;
+                }
+                
+                // Show suggestions
+                suggestionsDiv.innerHTML = `
+                    <div class="suggestion-header">
+                        <i class="fas fa-lightbulb"></i> Suggestions (${matches.length})
+                    </div>
+                `;
+                
+                matches.forEach(match => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.innerHTML = `
+                        <i class="fas ${match.icon}"></i>
+                        <span class="suggestion-text">${match.text}</span>
+                        <span style="margin-left: auto; opacity: 0.7;">${match.type}</span>
+                    `;
+                    
+                    item.addEventListener('click', function() {
+                        insertSuggestion(item);
+                    });
+                    
+                    suggestionsDiv.appendChild(item);
+                });
+                
+                // Position suggestions
+                const cursorCoords = getCursorCoordinates();
+                suggestionsDiv.style.display = 'block';
+                suggestionsDiv.style.left = cursorCoords.x + 'px';
+                suggestionsDiv.style.top = cursorCoords.y + 25 + 'px';
+                
+                // Highlight first item
+                const firstItem = suggestionsDiv.querySelector('.suggestion-item');
+                if (firstItem) {
+                    firstItem.classList.add('active');
+                }
+            }
+            
+            // Function to insert suggestion
+            function insertSuggestion(item) {
+                const text = item.querySelector('.suggestion-text').textContent;
+                const cursorPos = codeTextarea.selectionStart;
+                const textBeforeCursor = codeTextarea.value.substring(0, cursorPos);
+                const textAfterCursor = codeTextarea.value.substring(cursorPos);
+                
+                // Find the start of the current word
+                const lastNonWord = textBeforeCursor.search(/[^\w\.]$/);
+                const startPos = lastNonWord === -1 ? 0 : lastNonWord + 1;
+                
+                const newText = textBeforeCursor.substring(0, startPos) + text + textAfterCursor;
+                codeTextarea.value = newText;
+                
+                // Set cursor position after inserted text
+                codeTextarea.selectionStart = codeTextarea.selectionEnd = startPos + text.length;
+                codeTextarea.focus();
+                
+                hideSuggestions();
+            }
+            
+            // Function to hide suggestions
+            function hideSuggestions() {
+                suggestionsDiv.style.display = 'none';
+                suggestionsDiv.innerHTML = '';
+            }
+            
+            // Function to get cursor coordinates
+            function getCursorCoordinates() {
+                const cursorPos = codeTextarea.selectionStart;
+                const div = document.createElement('div');
+                const span = document.createElement('span');
+                const copyStyle = getComputedStyle(codeTextarea);
+                
+                div.style.visibility = 'hidden';
+                div.style.position = 'absolute';
+                div.style.whiteSpace = 'pre-wrap';
+                div.style.width = copyStyle.width;
+                div.style.height = copyStyle.height;
+                div.style.font = copyStyle.font;
+                div.style.padding = copyStyle.padding;
+                div.style.border = copyStyle.border;
+                div.style.lineHeight = copyStyle.lineHeight;
+                
+                document.body.appendChild(div);
+                
+                // Get the text before the cursor and a marker
+                const content = codeTextarea.value.substring(0, cursorPos);
+                const text = content.replace(/\n$/, '\n ');
+                div.textContent = text;
+                
+                if (text.endsWith('\n ')) {
+                    // Handle new line
+                    div.textContent = div.textContent.replace(/\n $/, '\n');
+                    span.style.display = 'inline-block';
+                    span.textContent = '|';
+                    div.appendChild(span);
+                }
+                
+                const rect = div.getBoundingClientRect();
+                const spanRect = span.getBoundingClientRect();
+                
+                document.body.removeChild(div);
+                
+                return {
+                    x: spanRect.left,
+                    y: spanRect.top
+                };
+            }
+            
+            // Simple syntax highlighting
+            codeTextarea.addEventListener('input', function() {
+                editorStatus.textContent = 'Editing...';
+                setTimeout(() => {
+                    editorStatus.textContent = 'Ready';
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

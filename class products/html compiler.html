@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Playground</title>
+    <link rel="icon" type="image/png" href="html.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://allcssjavascript.netlify.app/htmlcompiler.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img style="width: 100px; height: 70px;" src="html.png" alt="">
+                <div>
+                    <h1>Try your self</h1>
+                    <p class="tagline">(scroll down to see live output,don't need to run code it will automatically run output on changing the code.)</p>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" id="runBtn">
+                    <i class="fas fa-play"></i> Run Code
+                </button>
+                <button class="btn btn-secondary" id="newTabBtn">
+                    <i class="fas fa-external-link-alt"></i> Open in New Tab
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-pen"></i>
+                        <span>Code Editor</span>
+                    </div>
+                    <div class="panel-actions">
+                        <div class="icon-btn" title="Clear Code" id="clearBtn">
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                        <div style="display: none;" class="icon-btn" title="Save Code" id="saveBtn">
+                            <i class="fas fa-save"></i>
+                        </div>
+                        <div class="icon-btn" title="Settings" id="settingsBtn">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="editor-container">
+                    <div class="editor-tabs">
+                        <div class="editor-tab active" data-tab="html">HTML</div>
+                        <div class="editor-tab" data-tab="css">CSS</div>
+                        <div class="editor-tab" data-tab="js">JavaScript</div>
+                    </div>
+                    <!-- HTML Editor -->
+<textarea class="editor-content active" id="htmlEditor" spellcheck="false">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Simple Web Page</title>
+</head>
+<body>
+
+    <h1>Welcome to My Simple Page</h1>
+    <p>This is a basic HTML page with CSS and JavaScript included.</p>
+
+    <button onclick="showMessage()">Click Me!</button>
+
+</body>
+</html>
+
+
+</textarea>
+
+<!-- CSS Editor -->
+<textarea class="editor-content" id="cssEditor" spellcheck="false">
+ body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #0066cc;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0055aa;
+        }
+</textarea>
+
+<!-- JavaScript Editor -->
+<textarea class="editor-content" id="jsEditor" spellcheck="false">
+function showMessage() {
+            alert("Hello! You clicked the button!");
+        }
+</textarea>
+
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-eye"></i>
+                        <span>Live Preview</span>
+                    </div>
+                    <div class="panel-actions">
+                        <div class="icon-btn" title="Refresh Preview" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <div class="icon-btn" title="Fullscreen" id="fullscreenBtn">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-container">
+                    <div class="preview-placeholder" id="previewPlaceholder">
+                        <i class="fas fa-play-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <p>Click "Run Code" to see the preview</p>
+                    </div>
+                    <iframe id="previewFrame" sandbox="allow-scripts"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 Dark HTML Playground | Built with HTML, CSS & JavaScript</p>
+        </footer>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Editor Settings</div>
+                <div class="modal-close" id="closeModal">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="themeSelect">Editor Theme</label>
+                    <select id="themeSelect">
+                        <option value="dark">Dark Theme</option>
+                        <option value="light">Light Theme</option>
+                        <option value="monokai">Monokai</option>
+                        <option value="solarized">Solarized</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fontSize">Font Size</label>
+                    <input type="number" id="fontSize" min="12" max="24" value="16">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="lineNumbers"> Show Line Numbers
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="autoRun" checked> Auto Run on Changes
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelSettings">Cancel</button>
+                <button class="btn btn-primary" id="saveSettings">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Operation completed successfully!</span>
+    </div>
+
+    <script src="https://allcssjavascript.netlify.app/htmlcompiler.js">
+
+       
+    </script>
+</body>
+</html>

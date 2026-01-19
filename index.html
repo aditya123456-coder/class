@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+    }); 
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class</title>
+  <link rel="icon" type="image/png" href="icon.png?v=2">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="class.css">
+</head>
+
+<body>
+
+  <div id="mySidebar" class="sidebar">
+    <span class="closebtn" onclick="closeSidebar()">×</span>
+    <a href="#">Home</a>
+    <a href="https://originenotes.netlify.app/">Private notes</a>
+    <a href="class products/product.html">Our Products</a>
+    <a href="https://task.dkte.xyz/">Task</a>
+    <a href="class products/c compiler.html">C</a>
+    <a href="class products/html compiler.html">HTML</a>
+    <a href="class products/jscompiler.html">Javascript</a>
+    <a href="class products/meditation/peace.html">Meditation</a>
+    <button style="background: none; border: none; margin-top: 5px; cursor: pointer;" type="button" class="floating-btn"
+      id="addBtn">Add</button>
+    <button
+      style="padding: 10px 15px;text-decoration: none;font-size: 18px;color: rgb(255, 255, 255);display: block; background: none; border: none; margin-top: 10px; cursor: pointer;"
+      id="logoutBtn" onclick="logout()">Logout</button>
+    <div id="visitCount" style="color: white; margin-top: 20px; margin-left: 15px;"></div>
+    <div id="userCount" style="color: white; margin-top: 20px; margin-left: 15px;"></div>
+    <div id="onlineCount" style="color: white; margin-top: 20px; margin-left: 15px;"></div>
+  </div>
+
+  <!-- PASSWORD MODAL -->
+  <div class="modal" id="passwordModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Admin Password</h2>
+        <button class="close-modal" onclick="closePasswordModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="form-group">
+        <input type="password" id="passwordInput" class="form-control" placeholder="Password"
+          autocomplete="current-password">
+        <div id="passwordError" class="error-message"></div>
+      </div>
+      <div style="text-align:right;">
+        <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="handlePasswordSubmit()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD/EDIT MODAL -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add New Item</h2>
+        <button class="close-modal" id="closeModal"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="itemName" class="form-control" placeholder="Enter title">
+      </div>
+      <div class="form-group" id="descriptionContainer" style="display:none;">
+        <label>Description</label>
+        <textarea id="itemDescription" class="form-control" placeholder="Enter description"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Type</label>
+        <select id="itemType" class="form-control">
+          <option value="folder">Folder</option>
+          <option value="file">File</option>
+          <option value="url">URL</option>
+          <option value="note">Note</option>
+        </select>
+      </div>
+
+      <!-- FILE UPLOAD -->
+      <div class="form-group" id="fileUploadContainer" style="display:none;">
+        <label>Upload File</label>
+        <div class="file-upload" id="fileDropZone">
+          <div class="upload-content">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click or drag file here</p>
+          </div>
+          <input type="file" id="fileInput" hidden multiple>
+        </div>
+        <div id="filePreview" style="display:none; margin-top:1rem;">
+          <div class="file-preview"
+            style="display:flex; align-items:center; gap:1rem; background:#f8f9fa; padding:.5rem; border-radius:.5rem;">
+            <i class="fas fa-file" id="fileIcon"></i>
+            <div>
+              <div id="fileName" style="font-weight:500;"></div>
+              <div id="fileSize" style="font-size:.8rem; color:#666;"></div>
+            </div>
+            <button class="btn btn-secondary" onclick="clearFile()"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- URL -->
+      <div class="form-group" id="urlContainer" style="display:none;">
+        <label>URL</label>
+        <input type="text" id="itemURL" class="form-control" placeholder="https://example.com">
+      </div>
+
+      <!-- NOTE -->
+      <div class="form-group" id="noteContentContainer" style="display:none;">
+        <label>Content</label>
+        <textarea id="noteContent" class="form-control" placeholder="Enter note content"></textarea>
+      </div>
+
+      <div style="text-align:right;">
+        <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTE VIEW -->
+  <div id="noteView">
+    <button id="backViewBtn"><i class="fas fa-arrow-left"></i> Back</button>
+    <h2 class="notetitle" id="viewTitle"></h2>
+    <div style="padding: 30px; background-color: black; overflow: auto;">
+      <pre id="viewContent"></pre>
+    </div>
+  </div>
+
+  <!-- HEADER / NAV -->
+  <header>
+    <a style="text-decoration: none;" href="#" class="logo">
+      <button style="background: none; color: white;" class="openbtn" onclick="openSidebar()">&#9776;</button>
+      <video style="width: 50px; border-radius: 20px;" autoplay muted>
+        <source src="logo.mp4" type="video/mp4">
+      </video>
+    </a>
+    <div class="breadcrumbs" id="breadcrumbs">
+      <span onclick="navigateTo(-1)">Home</span>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search...">
+      <button class="search-button" id="searchButton">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    <div class="auth-actions">
+
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div id="searchResultsHeader" class="search-results-header" style="display:none;">
+      <div class="search-results-title">Search Results</div>
+      <button class="clear-search-btn" id="clearSearchBtn">
+        <i class="fas fa-times"></i> Clear Search
+      </button>
+    </div>
+
+    <div class="container" id="container">
+      <div class="empty-state">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p style="color: white;">No files or folders yet</p>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="btn btn-primary" id="loginBtn" onclick="login()">Load items</button>
+    </div>
+
+    <div id="loadingMoreIndicator" class="loading-more" style="display:none;">
+      <i class="fas fa-spinner fa-spin"></i> Loading more items...
+    </div>
+
+    <!-- Load More Button Container -->
+    <div id="loadMoreContainer" class="load-more-container" style="display:none;">
+      <button id="loadMoreBtn" class="load-more-btn">Load More</button>
+    </div>
+  </main>
+
+  <!-- FLOATING BUTTONS -->
+
+  <div style="display: none;">
+    <button type="button" class="floating-btn" id="addUrlBtn"><i class="fas fa-link"></i></button>
+    <button type="button" class="floating-btn" id="addNoteBtn"><i class="fas fa-sticky-note"></i></button>
+  </div>
+
+  <!-- UPLOAD QUEUE INDICATOR -->
+  <div class="queue-indicator" id="queueIndicator" style="display: none;">
+    <span id="queueCount">0</span> files in queue
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p style="color: rgb(255, 255, 255);">Loading...</p>
+  </div>
+  <!-- <div id="visitCount" style="color: white; text-align: center; margin-top: 10px;"></div> -->
+  <div id="userCount" style="color: white; text-align: center; margin-top: 10px;"></div>
+
+
+  <!-- Notification Popup -->
+  <div id="driveNotification" style="
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.129);
+    backdrop-filter: blur(5px);
+    color: rgb(255, 255, 255);
+    padding: 15px 20px;
+    border-radius: 8px;
+    border: thin solid rgb(255, 255, 255);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
+    z-index: 1000;
+    max-width: 300px;
+    font-family: 'Poppins', sans-serif;
+">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <strong>SY CSE 2025-26 SEE timetable uploaded</strong>
+      <button onclick="document.getElementById('driveNotification').style.display='none'"
+        style="background: none; border: none; font-size: 18px; cursor: pointer; color: white; position: absolute; top: 2%; right: 2%;">×</button>
+    </div>
+    <p style="margin: 10px 0;">Click below to view external oral Time table of CSE.</p>
+    <a href="https://drive.google.com/file/d/1Iv9ck5hFaUKs4klXARkH0m5b4Lo_IIz0/view?usp=sharing" target="_blank"
+      style="display: inline-block; background: #007bff; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none;">
+      View Image
+    </a>
+    
+  </div>
+
+  <script>
+    // Show drive link notification after 2 seconds
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        document.getElementById('driveNotification').style.display = 'block';
+      }, 2000);
+    });
+
+  </script>
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import {
+      getDatabase, ref, push, set, get, query, orderByChild,
+      equalTo, onValue, update, remove, child
+    } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+    import {
+      getAuth, signInAnonymously, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBumR1N_WeTOVTPJLn7HGgAx22e-954OFg",
+      authDomain: "mycloudfilemanager.firebaseapp.com",
+      databaseURL: "https://mycloudfilemanager-default-rtdb.firebaseio.com",
+      projectId: "mycloudfilemanager",
+      storageBucket: "mycloudfilemanager.appspot.com",
+      messagingSenderId: "1089357596229",
+      appId: "1:1089357596229:web:45769281882cfcb322452c",
+      measurementId: "G-Q4EVGMMFZL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Track Visit Count
+    function incrementVisitCount() {
+      const visitsRef = ref(db, 'visits');
+
+      get(visitsRef).then(snapshot => {
+        const currentCount = snapshot.exists() ? snapshot.val() : 0;
+        set(visitsRef, currentCount + 1);
+      }).catch(error => {
+        console.error("Failed to update visit count:", error);
+      });
+    }
+
+    incrementVisitCount();
+    showVisitCount();
+
+    function showVisitCount() {
+      const visitsRef = ref(db, 'visits');
+      get(visitsRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const count = snapshot.val();
+          document.getElementById('visitCount').textContent = `Visits: ${count}`;
+        }
+      });
+    }
+
+
+    import { onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
+    // Track Online Users
+    function trackOnlineUsers() {
+      const connectionsRef = ref(db, "onlineUsers");
+
+      // Generate unique ID for this session
+      const myConnectionRef = push(connectionsRef);
+
+      // When connected, add self to list
+      set(myConnectionRef, {
+        connectedAt: serverTimestamp()
+      });
+
+      // Remove when disconnected
+      onDisconnect(myConnectionRef).remove();
+
+      // Listen to total online count
+      onValue(connectionsRef, snapshot => {
+        if (snapshot.exists()) {
+          const onlineCount = Object.keys(snapshot.val()).length;
+          document.getElementById("onlineCount").textContent = `Online: ${onlineCount}`;
+        } else {
+          document.getElementById("onlineCount").textContent = `Online: 0`;
+        }
+      });
+    }
+
+    trackOnlineUsers();
+
+
+    //for users
+
+    function trackUniqueVisitor() {
+      const localKey = 'myUniqueDeviceId';
+      let deviceId = localStorage.getItem(localKey);
+
+      // If not already stored, generate a new unique ID
+      if (!deviceId) {
+        deviceId = crypto.randomUUID(); // Modern browsers support this
+        localStorage.setItem(localKey, deviceId);
+      }
+
+      const userRef = ref(db, 'users/' + deviceId);
+
+      // Check if this device ID already exists in Firebase
+      get(userRef).then(snapshot => {
+        if (!snapshot.exists()) {
+          // First time visit from this device – add to database
+          set(userRef, {
+            visitedAt: Date.now()
+          });
+        }
+        showUserCount(); // Show total users count
+      }).catch(error => {
+        console.error('Failed to track user:', error);
+      });
+    }
+
+    function showUserCount() {
+      const usersRef = ref(db, 'users');
+      get(usersRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const userCount = Object.keys(snapshot.val()).length;
+          document.getElementById('userCount').textContent = `Users: ${userCount}`;
+        }
+      });
+    }
+
+    trackUniqueVisitor();
+    showUserCount();
+
+
+    // State Management
+    let currentPath = [];
+    let selectedFiles = [];
+    let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+    let currentEditId = null;
+    let pendingAction = null;
+    let passwordAttempts = 0;
+    const ADMIN_PASSWORD = "origine123";
+    const MAX_ATTEMPTS = 3;
+    let isSearchMode = false;
+    let searchResults = [];
+
+    // Upload queue management
+    let uploadQueue = [];
+    let isUploading = false;
+    let placeholderCards = {};
+
+    // Pagination variables
+    let allItems = []; // All items for current folder
+    let currentPage = 0;
+    const itemsPerPage = 10;
+    let hasMoreItems = false;
+    let isLoadingMore = false;
+
+    // Search pagination variables
+    let currentSearchPage = 0;
+    let hasMoreSearchResults = false;
+
+    // DOM References
+    const container = document.getElementById('container');
+    const addBtn = document.getElementById('addBtn');
+    const addUrlBtn = document.getElementById('addUrlBtn');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const modal = document.getElementById('modal');
+    const passwordModal = document.getElementById('passwordModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const itemName = document.getElementById('itemName');
+    const itemType = document.getElementById('itemType');
+    const descriptionContainer = document.getElementById('descriptionContainer');
+    const fileUploadContainer = document.getElementById('fileUploadContainer');
+    const fileDropZone = document.getElementById('fileDropZone');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileIcon = document.getElementById('fileIcon');
+    const urlContainer = document.getElementById('urlContainer');
+    const itemURL = document.getElementById('itemURL');
+    const noteContentContainer = document.getElementById('noteContentContainer');
+    const noteContentInput = document.getElementById('noteContent');
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const loadingIndicator = document.getElementById('loading');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const breadcrumbs = document.getElementById('breadcrumbs');
+    const modalTitle = document.getElementById('modalTitle');
+    const noteView = document.getElementById('noteView');
+    const backViewBtn = document.getElementById('backViewBtn');
+    const viewTitle = document.getElementById('viewTitle');
+    const viewContent = document.getElementById('viewContent');
+    const uploadContent = fileDropZone.querySelector('.upload-content');
+    const queueIndicator = document.getElementById('queueIndicator');
+    const queueCount = document.getElementById('queueCount');
+    const loadingMoreIndicator = document.getElementById('loadingMoreIndicator');
+    const loadMoreContainer = document.getElementById('loadMoreContainer');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const searchResultsHeader = document.getElementById('searchResultsHeader');
+
+    const fileIcons = {
+      pdf: 'file-pdf', doc: 'file-word', docx: 'file-word',
+      xls: 'file-excel', xlsx: 'file-excel', ppt: 'file-powerpoint',
+      pptx: 'file-powerpoint', jpg: 'file-image', jpeg: 'file-image',
+      png: 'file-image', gif: 'file-image', mp3: 'file-audio',
+      wav: 'file-audio', mp4: 'file-video', mov: 'file-video',
+      zip: 'file-archive', rar: 'file-archive', txt: 'file-alt',
+      default: 'file'
+    };
+
+    // Utility Functions
+    function showLoading() { loadingIndicator.style.display = 'flex'; }
+    function hideLoading() { loadingIndicator.style.display = 'none'; }
+
+    function showLoadingMore() { loadingMoreIndicator.style.display = 'block'; }
+    function hideLoadingMore() { loadingMoreIndicator.style.display = 'none'; }
+
+    function formatSize(b) {
+      if (!b) return '';
+      const k = 1024;
+      const units = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(b) / Math.log(k));
+      return (b / Math.pow(k, i)).toFixed(1) + ' ' + units[i];
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    }
+
+    function showEmptyState(msg) {
+      container.innerHTML = `<div class="empty-state">
+        <i class="fas fa-folder-open"></i><p>${msg}</p></div>`;
+    }
+
+    // Update queue indicator
+    function updateQueueIndicator() {
+      if (uploadQueue.length > 0) {
+        queueCount.textContent = uploadQueue.length;
+        queueIndicator.style.display = 'block';
+      } else {
+        queueIndicator.style.display = 'none';
+      }
+    }
+
+    // Authentication
+    function initAuth() {
+      showLoading();
+      onAuthStateChanged(auth, user => {
+        hideLoading();
+        if (user) {
+          loginBtn.style.display = 'none';
+          logoutBtn.style.display = 'inline-block';
+          [addBtn, addUrlBtn, addNoteBtn].forEach(b => b.style.display = 'block');
+          loadItems();
+        } else {
+          loginBtn.style.display = 'inline-block';
+          logoutBtn.style.display = 'none';
+          [addBtn, addUrlBtn, addNoteBtn].forEach(b => b.style.display = 'block');
+          showEmptyState('Please login to access your items');
+        }
+      }, e => {
+        hideLoading();
+        alert('Auth error: ' + e.message);
+      });
+    }
+
+    window.login = async () => {
+      showLoading();
+      try {
+        await signInAnonymously(auth);
+      } catch (e) {
+        alert('Login failed: ' + e.message);
+      } finally {
+        hideLoading();
+      }
+    };
+
+    window.logout = async () => {
+      showLoading();
+      try {
+        await signOut(auth);
+        sessionStorage.removeItem('isAdmin');
+      } catch (e) {
+        alert('Logout failed: ' + e.message);
+      } finally {
+        hideLoading();
+      }
+    };
+
+    // Breadcrumbs
+    function updateBreadcrumbs() {
+      breadcrumbs.innerHTML = `<span onclick="navigateTo(-1)">Home</span>` +
+        currentPath.map((p, i) =>
+          `<span class="separator">/</span>
+           <span onclick="navigateTo(${i})">${p.name}</span>`
+        ).join('');
+    }
+
+    window.navigateTo = idx => {
+      currentPath = idx < 0 ? [] : currentPath.slice(0, idx + 1);
+      loadItems(currentPath.length ? currentPath[currentPath.length - 1].id : 'root');
+      updateBreadcrumbs();
+    };
+
+    // File Management - Realtime Database Implementation
+    async function loadItems(parentId = 'root') {
+      showLoading();
+      container.innerHTML = '';
+      allItems = [];
+      currentPage = 0;
+      hasMoreItems = false;
+      loadMoreContainer.style.display = 'none'; // Hide load more button
+
+      // Hide search results header
+      searchResultsHeader.style.display = 'none';
+      isSearchMode = false;
+
+      // Reference to the items in the database
+      const itemsRef = ref(db, 'items');
+
+      try {
+        // Query items by parent
+        const itemsQuery = query(
+          itemsRef,
+          orderByChild('parent'),
+          equalTo(parentId)
+        );
+
+        const snapshot = await get(itemsQuery);
+
+        if (!snapshot.exists()) {
+          showEmptyState('No items here');
+          hideLoading();
+          return;
+        }
+
+        // Convert snapshot to array and sort by createdAt
+        const items = [];
+        snapshot.forEach(childSnapshot => {
+          items.push({
+            id: childSnapshot.key,
+            ...childSnapshot.val()
+          });
+        });
+
+        items.sort((a, b) => a.createdAt - b.createdAt);
+
+        allItems = items;
+        hasMoreItems = allItems.length > itemsPerPage;
+        renderItems();
+
+      } catch (e) {
+        alert('Error loading items: ' + e.message);
+      }
+
+      hideLoading();
+    }
+
+    function renderItems() {
+      if (currentPage === 0) {
+        container.innerHTML = '';
+      }
+
+      if (allItems.length === 0) {
+        showEmptyState('No items here');
+        return;
+      }
+
+      const start = currentPage * itemsPerPage;
+      const end = start + itemsPerPage;
+      const itemsToRender = allItems.slice(start, end);
+
+      itemsToRender.forEach(item => createItemCard(item, item.id));
+
+      // Show or hide load more button
+      if (allItems.length > end) {
+        loadMoreContainer.style.display = 'block';
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = "Load More";
+      } else {
+        loadMoreContainer.style.display = 'none';
+      }
+    }
+
+    function loadMoreItems() {
+      if (isLoadingMore) return;
+
+      isLoadingMore = true;
+      showLoadingMore();
+      loadMoreBtn.disabled = true;
+      loadMoreBtn.textContent = "Loading...";
+
+      // Simulate network delay for demo
+      setTimeout(() => {
+        currentPage++;
+        renderItems();
+        isLoadingMore = false;
+        hideLoadingMore();
+      }, 500);
+    }
+
+    function createItemCard(data, id) {
+      const card = document.createElement('div');
+      card.className = `card ${data.type}`;
+      card.setAttribute('data-id', id);
+      let iconHTML, clickHandler;
+
+      if (data.type === 'folder') {
+        clickHandler = () => {
+          currentPath.push({ id, name: data.name });
+          loadItems(id);
+          updateBreadcrumbs();
+        };
+      } else if (data.type === 'file') {
+        const ext = data.name.split('.').pop().toLowerCase();
+
+        clickHandler = e => {
+          e.stopPropagation();
+          openFile(data);
+        };
+      } else if (data.type === 'url') {
+
+        clickHandler = e => {
+          e.stopPropagation();
+          window.open(data.url, '_blank');
+        };
+      } else {
+
+        clickHandler = e => {
+          e.stopPropagation();
+          showNoteView(data);
+        };
+      }
+
+      card.innerHTML = `
+  <h3>${data.name}</h3>
+  ${data.description
+          ? `<p class="card-desc">${data.description}</p>`
+          : ''}
+ ${data.type === 'file' ? '' : ''}
+`;
+
+
+      if (isAdmin) {
+        const ab = document.createElement('div');
+        ab.className = 'action-buttons';
+        ab.innerHTML = `
+    <button class="action-btn" onclick="event.stopPropagation(); deleteItem('${id}')">
+      <i class="fas fa-trash"></i>
+    </button>
+    <button class="action-btn" onclick="event.stopPropagation(); openEditor('${id}')">
+      <i class="fas fa-edit"></i>
+    </button>
+    <button class="action-btn" onclick="event.stopPropagation(); openMoveModal('${id}')">
+      <i class="fas fa-folder-open"></i>
+    </button>
+  `;
+        card.appendChild(ab);
+      }
+
+
+
+      card.addEventListener('click', clickHandler);
+      container.appendChild(card);
+      return card;
+    }
+
+    // File Handling
+    async function openFile(d) {
+      showLoading();
+      try {
+        const newWindow = window.open();
+        const isImage = d.fileData.startsWith('data:image/');
+
+        newWindow.document.write(`
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+            <title>File Viewer</title>
+            <style>
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background: #000;
+              }
+              ${isImage
+            ? `img {
+                      max-width: 100%;
+                      max-height: 100vh;
+                      height: auto;
+                      object-fit: contain;
+                    }`
+            : `iframe {
+                      width: 100%;
+                      height: 100vh;
+                      border: none;
+                    }`
+          }
+            </style>
+          </head>
+          <body>
+            ${isImage ? `<img src="${d.fileData}">` : `<iframe src="${d.fileData}"></iframe>`}
+          </body>
+          </html>
+        `);
+
+        newWindow.document.close();
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+      hideLoading();
+    }
+
+    // ---------- helpers ----------
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Convert plain http(s) URLs into safe <a> tags while escaping all other text.
+ * This avoids inserting raw HTML from user content.
+ */
+function linkifyAndEscape(rawText) {
+  if (!rawText) return '';
+
+  // Regex to find http(s) URLs. We stop at whitespace or '<' to be safe.
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+  let lastIndex = 0;
+  let result = '';
+  let match;
+
+  while ((match = urlRegex.exec(rawText)) !== null) {
+    const url = match[0];
+    const idx = match.index;
+
+    // Append escaped text before the URL
+    if (idx > lastIndex) {
+      result += escapeHtml(rawText.slice(lastIndex, idx));
+    }
+
+    // Build a safe href and escaped display text
+    let safeHref;
+    try {
+      safeHref = encodeURI(url);
+    } catch (e) {
+      safeHref = '#';
+    }
+    const displayText = escapeHtml(url);
+
+    // Append anchor (note: anchor attributes are constructed from safeHref only)
+    result += `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" style="color: blue; text-decoration: underline;">${displayText}</a>`;
+
+    lastIndex = idx + url.length;
+  }
+
+  // Append the remainder escaped
+  if (lastIndex < rawText.length) {
+    result += escapeHtml(rawText.slice(lastIndex));
+  }
+
+  return result;
+}
+
+// ---------- updated showNoteView ----------
+function showNoteView(d) {
+  // safe set title (no HTML injection)
+  viewTitle.textContent = d && d.name ? d.name : 'Note';
+
+  // build safe HTML: escape code/HTML then convert URLs to anchors safely
+  const safeHtml = linkifyAndEscape(d && d.content ? d.content : '');
+
+  // viewContent is assumed to be a <pre> or other element that preserves whitespace.
+  // We intentionally set innerHTML because safeHtml contains only escaped text + controlled <a> tags.
+  viewContent.innerHTML = safeHtml;
+
+  noteView.classList.add('active');
+}
+
+
+
+    backViewBtn.addEventListener('click', () => noteView.classList.remove('active'));
+
+    // Modals
+    window.openModal = (editId = null, forcedType = null) => {
+  currentEditId = editId;
+  modalTitle.textContent = editId
+    ? 'Edit Item'
+    : forcedType === 'url' ? 'Add New URL'
+      : forcedType === 'note' ? 'Add New Note'
+        : 'Add New Item';
+
+  // Reset fields
+  itemName.value = '';
+  itemType.value = forcedType || 'folder';
+  itemURL.value = '';
+  noteContentInput.value = '';
+  clearFile();
+  document.getElementById('itemDescription').value = '';
+  descriptionContainer.style.display = 'none';
+
+  fileUploadContainer.style.display = 'none';
+  urlContainer.style.display = 'none';
+  noteContentContainer.style.display = 'none';
+
+  // Show correct section for forced type
+  if (forcedType === 'file') fileUploadContainer.style.display = 'block';
+  if (forcedType === 'url') urlContainer.style.display = 'block';
+  if (forcedType === 'note') noteContentContainer.style.display = 'block';
+
+  if (editId) {
+    // Get item from Realtime Database
+    get(ref(db, `items/${editId}`)).then(snapshot => {
+      if (snapshot.exists()) {
+        const d = snapshot.val();
+        itemName.value = d.name;
+        itemType.value = d.type;
+
+        if (d.type === 'file') {
+          fileUploadContainer.style.display = 'block';
+          filePreview.style.display = 'block';
+          fileName.textContent = d.name;
+          fileSize.textContent = formatSize(d.size);
+          const eExt = d.name.split('.').pop().toLowerCase();
+          fileIcon.className = `fas fa-${fileIcons[eExt] || fileIcons.default}`;
+          selectedFiles = [{
+            name: d.name,
+            size: d.size,
+            fileData: d.fileData
+          }];
+        }
+
+        if (d.type === 'url') {
+          urlContainer.style.display = 'block';
+          itemURL.value = d.url;
+          descriptionContainer.style.display = 'block';
+          document.getElementById('itemDescription').value = d.description || '';
+        }
+
+        if (d.type === 'note') {
+          noteContentContainer.style.display = 'block';
+          noteContentInput.value = d.content;
+        }
+
+        // ✅ Fix: show description for folder as well
+        if (d.type === 'folder') {
+          descriptionContainer.style.display = 'block';
+          document.getElementById('itemDescription').value = d.description || '';
+        }
+      }
+    });
+  }
+
+  modal.classList.add('active');
+};
+
+
+    window.openPasswordModal = act => {
+      pendingAction = act;
+      passwordModal.classList.add('active');
+    };
+
+    window.closePasswordModal = () => {
+      passwordModal.classList.remove('active');
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordError').style.display = 'none';
+      passwordAttempts = 0;
+      pendingAction = null;
+    };
+
+    window.handlePasswordSubmit = async function () {
+      const pwEl = document.getElementById('passwordInput');
+      const pw = pwEl.value.trim();
+      const errEl = document.getElementById('passwordError');
+      const submitBtn = document.querySelector('#passwordModal .btn-primary');
+      const originalBtnHtml = submitBtn.innerHTML;
+
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+
+      try {
+        // Get stored password from Firebase
+        const passwordRef = ref(db, 'adminPassword');
+        const snapshot = await get(passwordRef);
+
+        if (!snapshot.exists()) {
+          errEl.textContent = 'Admin password not configured';
+          errEl.style.display = 'block';
+          return;
+        }
+
+        const storedPassword = snapshot.val();
+
+        if (pw === storedPassword) {
+          isAdmin = true;
+          sessionStorage.setItem('isAdmin', 'true');
+          closePasswordModal();
+
+          if (pendingAction?.type === 'edit') {
+            openModal(pendingAction.id);
+          } else if (pendingAction === 'addUrl') {
+            openModal(null, 'url');
+          } else if (pendingAction === 'addNote') {
+            openModal(null, 'note');
+          } else {
+            openModal();
+          }
+        } else {
+          errEl.textContent = 'Invalid password';
+          errEl.style.display = 'block';
+        }
+      } catch (e) {
+        errEl.textContent = 'Verification failed: ' + e.message;
+        errEl.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+      }
+    };
+
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    function closeModal() {
+      modal.classList.remove('active');
+      itemName.value = '';
+      itemType.value = 'folder';
+      itemURL.value = '';
+      noteContentInput.value = '';
+      clearFile();
+    }
+
+    // File Upload Handling
+    async function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    itemType.addEventListener('change', () => {
+      fileUploadContainer.style.display = itemType.value === 'file' ? 'block' : 'none';
+      urlContainer.style.display = itemType.value === 'url' ? 'block' : 'none';
+      noteContentContainer.style.display = itemType.value === 'note' ? 'block' : 'none';
+      descriptionContainer.style.display = 'block';
+
+      clearFile();
+    });
+
+    fileDropZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async e => {
+      if (!e.target.files.length) return;
+
+      // Clear previous selections
+      selectedFiles = [];
+
+      // Process each file
+      for (const file of e.target.files) {
+        try {
+          const base64Data = await readFileAsBase64(file);
+          selectedFiles.push({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            data: base64Data
+          });
+        } catch (error) {
+          alert('Error reading file: ' + error.message);
+        }
+      }
+
+      // Update file preview for the first file
+      if (selectedFiles.length > 0) {
+        const file = selectedFiles[0];
+        fileName.textContent = file.name;
+        fileSize.textContent = formatSize(file.size);
+        const ext = file.name.split('.').pop().toLowerCase();
+        fileIcon.className = `fas fa-${fileIcons[ext] || fileIcons.default}`;
+        filePreview.style.display = 'block';
+        fileDropZone.classList.add('active');
+        itemName.value = file.name.replace(/\.[^/.]+$/, '');
+      }
+
+      // Show how many files are selected
+      if (selectedFiles.length > 1) {
+        fileName.textContent += ` + ${selectedFiles.length - 1} more`;
+      }
+    });
+
+    ['dragover', 'dragleave', 'drop'].forEach(ev => {
+      fileDropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        const over = (ev === 'dragover');
+        fileDropZone.classList.toggle('active', over);
+        uploadContent.innerHTML = over
+          ? '<i class="fas fa-file-import"></i><p>Drop file to upload</p>'
+          : '<i class="fas fa-cloud-upload-alt"></i><p>Click or drag file here</p>';
+        if (ev === 'drop' && e.dataTransfer.files.length) {
+          fileInput.files = e.dataTransfer.files;
+          fileInput.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+
+    function clearFile() {
+      selectedFiles = [];
+      fileInput.value = '';
+      filePreview.style.display = 'none';
+      fileDropZone.classList.remove('active');
+      uploadContent.innerHTML = '<i class="fas fa-cloud-upload-alt"></i><p>Click or drag file here</p>';
+    }
+
+    // Create placeholder card for sequential upload
+    function createPlaceholderCard(file) {
+      const card = document.createElement('div');
+      card.className = 'card file placeholder-card';
+      card.innerHTML = `
+        <div class="uploading">
+          <i class="fas fa-clock"></i>
+          <p>Queued: ${file.name}</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:0%; background:#ccc;"></div>
+          </div>
+        </div>
+        <h3>${file.name}</h3>
+        <div class="file-size">${formatSize(file.size)}</div>
+      `;
+      return card;
+    }
+
+    // Update progress bar
+    function updateProgress(placeholder, progress) {
+      const progressBar = placeholder.querySelector('.progress-fill');
+      if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+        progressBar.style.background = progress === 100 ? 'var(--success)' : 'var(--primary)';
+      }
+    }
+
+    // Sequential file upload
+    async function processUploadQueue() {
+      if (isUploading || uploadQueue.length === 0) return;
+
+      isUploading = true;
+      const { file, name, description, parent, placeholder } = uploadQueue.shift();
+      updateQueueIndicator();
+
+      try {
+        // Update placeholder to show uploading
+        placeholder.querySelector('.uploading').innerHTML = `
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Uploading ${file.name}</p>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        `;
+
+        // Simulate upload progress
+        for (let progress = 0; progress <= 100; progress += 10) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          updateProgress(placeholder, progress);
+        }
+
+        // Save to Realtime Database
+        const newItemRef = push(ref(db, 'items'));
+        const data = {
+          name: name || file.name.replace(/\.[^/.]+$/, ''),
+          type: 'file',
+          parent,
+          description,
+          fileData: file.data,
+          size: file.size,
+          createdAt: Date.now(), // Use current timestamp
+          owner: auth.currentUser.uid
+        };
+
+        await set(newItemRef, data);
+
+        // Replace placeholder with actual card
+        const newItem = { ...data, id: newItemRef.key };
+        const newCard = createItemCard(newItem, newItemRef.key);
+        placeholder.parentNode.replaceChild(newCard, placeholder);
+
+      } catch (e) {
+        alert('Error uploading file: ' + e.message);
+        placeholder.remove();
+      } finally {
+        isUploading = false;
+        processUploadQueue(); // Process next file
+      }
+    }
+
+    // Add files to upload queue
+    function addToUploadQueue(name, description) {
+      const parent = currentPath.length ? currentPath[currentPath.length - 1].id : 'root';
+
+      for (const file of selectedFiles) {
+        // Create placeholder card
+        const placeholder = createPlaceholderCard(file);
+        container.appendChild(placeholder);
+
+        // Remove empty state if present
+        const emptyState = container.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+
+        uploadQueue.push({
+          file,
+          name: name || file.name.replace(/\.[^/.]+$/, ''),
+          description,
+          parent,
+          placeholder
+        });
+      }
+
+      updateQueueIndicator();
+      processUploadQueue();
+    }
+
+    // Save Handler - Realtime Database
+    saveBtn.addEventListener('click', async () => {
+      const name = itemName.value.trim();
+      const type = itemType.value;
+      const urlVal = itemURL.value.trim();
+      const noteVal = noteContentInput.value.trim();
+      const description = document.getElementById('itemDescription')?.value.trim();
+
+      if (type === 'folder' && !description) {
+        alert('Description required');
+        return;
+      }
+
+      if (!name) {
+        alert('Title required');
+        return;
+      }
+
+      if (type === 'file' && selectedFiles.length === 0 && currentEditId === null) {
+        alert('File required');
+        return;
+      }
+
+      if (type === 'url' && !urlVal) {
+        alert('URL required');
+        return;
+      }
+
+      if (type === 'note' && !noteVal) {
+        alert('Content required');
+        return;
+      }
+
+      showLoading();
+      const data = {
+        name,
+        type,
+        description,
+        createdAt: Date.now(), // Use current timestamp
+        owner: auth.currentUser.uid
+      };
+
+      const parent = currentPath.length ? currentPath[currentPath.length - 1].id : 'root';
+      data.parent = parent;
+
+      try {
+        if (type === 'file' && currentEditId === null) {
+          // Handle new file uploads with sequential queue
+          addToUploadQueue(name, description);
+          closeModal();
+          hideLoading();
+          return;
+        }
+
+        if (type === 'file') {
+          if (selectedFiles.length > 0) {
+            const file = selectedFiles[0];
+            data.fileData = file.data;
+            data.size = file.size;
+          }
+        }
+
+        if (type === 'url') data.url = urlVal;
+        if (type === 'note') data.content = noteVal;
+
+        if (currentEditId) {
+          // For edits, keep original timestamp
+          const itemRef = ref(db, `items/${currentEditId}`);
+          const snapshot = await get(itemRef);
+          if (snapshot.exists()) {
+            const originalData = snapshot.val();
+            data.createdAt = originalData.createdAt; // Preserve original timestamp
+          }
+
+          await update(itemRef, data);
+          loadItems(parent);
+        } else {
+          const newItemRef = push(ref(db, 'items'));
+          await set(newItemRef, data);
+
+          // Remove empty state if present
+          const emptyState = container.querySelector('.empty-state');
+          if (emptyState) emptyState.remove();
+
+          // Create and append new card
+          const newData = { ...data, id: newItemRef.key };
+          const card = createItemCard(newData, newItemRef.key);
+          container.appendChild(card);
+        }
+
+        closeModal();
+      } catch (e) {
+        alert('Error: ' + e.message);
+      } finally {
+        hideLoading();
+      }
+    });
+
+    // Delete/Edit
+    window.deleteItem = async id => {
+      if (!confirm('Delete this item?')) return;
+      await remove(ref(db, `items/${id}`));
+      loadItems(currentPath.length ? currentPath[currentPath.length - 1].id : 'root');
+    };
+
+    window.openEditor = id => {
+      if (isAdmin) {
+        openModal(id);
+      } else {
+        pendingAction = { type: 'edit', id };
+        openPasswordModal();
+      }
+    };
+
+    // Search functionality - IMPROVED VERSION
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function highlightMatch(text, query) {
+      if (!query) return text;
+      const words = query.trim().toLowerCase().split(/\s+/);
+      let result = text;
+      words.forEach(word => {
+        const escaped = escapeRegExp(word);
+        const regex = new RegExp(`(${escaped})`, 'gi');
+        result = result.replace(regex, '<span class="search-highlight">$1</span>');
+      });
+      return result;
+    }
+
+    // Advanced search algorithm
+    function matchesSearch(item, query) {
+      if (!query) return false;
+
+      const queryWords = query.trim().toLowerCase().split(/\s+/);
+      const searchFields = [
+        item.name.toLowerCase(),
+        item.description ? item.description.toLowerCase() : '',
+        item.type === 'url' ? item.url.toLowerCase() : '',
+        item.type === 'note' ? item.content.toLowerCase() : ''
+      ];
+
+      // Check if all query words appear in any field (in any order)
+      return queryWords.every(word => {
+        return searchFields.some(field => field.includes(word));
+      });
+    }
+
+    async function performGlobalSearch(query) {
+      if (!query.trim()) {
+        clearSearch();
+        return;
+      }
+
+      showLoading();
+      isSearchMode = true;
+      searchResultsHeader.style.display = 'flex';
+      currentSearchPage = 0;
+
+      try {
+        const itemsRef = ref(db, 'items');
+        const snapshot = await get(itemsRef);
+
+        if (!snapshot.exists()) {
+          showEmptyState('No items found');
+          hideLoading();
+          return;
+        }
+
+        const allItems = [];
+        snapshot.forEach(childSnapshot => {
+          allItems.push({
+            id: childSnapshot.key,
+            ...childSnapshot.val()
+          });
+        });
+
+        // Filter items using advanced matching
+        const results = allItems.filter(item => matchesSearch(item, query));
+        searchResults = results;
+
+        displaySearchResults(currentSearchPage);
+      } catch (e) {
+        alert('Search error: ' + e.message);
+      }
+
+      hideLoading();
+    }
+
+    function displaySearchResults(page) {
+      // If this is the first “search” page, clear out any old cards:
+      if (page === 0) {
+        container.innerHTML = '';
+      }
+
+      // If there are no matches at all, show empty state and hide “Load More”:
+      if (searchResults.length === 0) {
+        // Only show empty‐state once (on page 0). On page > 0, there’s nothing to append anyway.
+        if (page === 0) {
+          showEmptyState('No matching items found');
+        }
+        loadMoreContainer.style.display = 'none';
+        return;
+      }
+
+      // Compute start/end indices for this “page” of searchResults:
+      const start = page * itemsPerPage;
+      const end = start + itemsPerPage;
+      const itemsToShow = searchResults.slice(start, end);
+
+      // Create & append a card for each item in this slice:
+      itemsToShow.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `card ${item.type}`;
+        card.setAttribute('data-id', item.id);
+
+        // Highlight query matches in name and description:
+        const highlightedName = item.name;
+        const highlightedDesc = item.description || '';
+
+
+        card.innerHTML = `
+  <h3>${item.name}</h3>
+  ${item.description
+            ? `<p class="card-desc">${item.description}</p>`
+            : ''}
+  ${item.type === 'file'
+            ? ''
+            : ''}
+`;
+
+
+        if (isAdmin) {
+          const ab = document.createElement('div');
+          ab.className = 'action-buttons';
+          ab.innerHTML = `
+        <button class="action-btn" onclick="deleteItem('${item.id}')">
+          <i class="fas fa-trash"></i>
+        </button>
+        <button class="action-btn" onclick="openEditor('${item.id}')">
+          <i class="fas fa-edit"></i>
+        </button>
+      `;
+          card.appendChild(ab);
+        }
+
+        // Attach the same click handler logic (folder vs. file vs. URL vs. note):
+        card.addEventListener('click', e => {
+          e.stopPropagation();
+          if (item.type === 'folder') {
+            currentPath = [];
+            loadItems(item.id);
+          } else if (item.type === 'file') {
+            openFile(item);
+          } else if (item.type === 'url') {
+            window.open(item.url, '_blank');
+          } else if (item.type === 'note') {
+            showNoteView(item);
+          }
+        });
+
+        // APPEND (instead of replace) so earlier pages remain visible:
+        container.appendChild(card);
+      });
+
+      // Decide whether there are more search pages to load:
+      if (searchResults.length > end) {
+        loadMoreContainer.style.display = 'block';
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = "Load More";
+      } else {
+        loadMoreContainer.style.display = 'none';
+      }
+    }
+
+    function loadMoreSearchResults() {
+      if (isLoadingMore) return;
+
+      isLoadingMore = true;
+      showLoadingMore();
+      loadMoreBtn.disabled = true;
+      loadMoreBtn.textContent = "Loading...";
+
+      // Simulate network delay for demo
+      setTimeout(() => {
+        currentSearchPage++;
+        displaySearchResults(currentSearchPage);
+        isLoadingMore = false;
+        hideLoadingMore();
+      }, 500);
+    }
+
+    function clearSearch() {
+      isSearchMode = false;
+      searchResultsHeader.style.display = 'none';
+      searchInput.value = '';
+      loadItems(currentPath.length ? currentPath[currentPath.length - 1].id : 'root');
+    }
+
+    // Initialize search functionality
+    searchButton.addEventListener('click', () => {
+      performGlobalSearch(searchInput.value);
+    });
+
+    searchInput.addEventListener('keyup', e => {
+      if (e.key === 'Enter') {
+        performGlobalSearch(searchInput.value);
+      }
+    });
+
+    clearSearchBtn.addEventListener('click', clearSearch);
+
+    // Floating Buttons
+    addBtn.addEventListener('click', () => isAdmin ? openModal() : openPasswordModal());
+    addUrlBtn.addEventListener('click', () => isAdmin ? openModal(null, 'url') : openPasswordModal('addUrl'));
+    addNoteBtn.addEventListener('click', () => isAdmin ? openModal(null, 'note') : openPasswordModal('addNote'));
+
+    // Initialize
+    initAuth();
+    updateBreadcrumbs();
+
+    // Unified load more button handler
+    loadMoreBtn.addEventListener('click', () => {
+      if (isSearchMode) {
+        loadMoreSearchResults();
+      } else {
+        loadMoreItems();
+      }
+    });
+
+    window.openSidebar = function () {
+      document.getElementById("mySidebar").style.left = "0px";
+    };
+
+    let moveTargetId = null;
+
+    window.openMoveModal = function (itemId) {
+      moveTargetId = itemId;
+      document.getElementById('moveModal').classList.add('active');
+
+      const select = document.getElementById('moveDestination');
+      select.innerHTML = '<option value="root">Root</option>';
+
+      get(child(ref(db), 'items')).then(snapshot => {
+        const data = snapshot.val();
+        for (let key in data) {
+          if (data[key].type === 'folder' && key !== itemId) {
+            select.innerHTML += `<option value="${key}">${data[key].name}</option>`;
+          }
+        }
+      });
+    }
+
+    window.closeMoveModal = function () {
+      document.getElementById('moveModal').classList.remove('active');
+    }
+
+    window.confirmMove = function () {
+      const newParent = document.getElementById('moveDestination').value;
+      const itemRef = ref(db, `items/${moveTargetId}`);
+
+      update(itemRef, { parent: newParent })
+        .then(() => {
+          closeMoveModal();
+          alert('Item moved!');
+          loadItems(currentPath.length ? currentPath[currentPath.length - 1].id : 'root');
+        })
+        .catch(err => {
+          alert('Move failed: ' + err.message);
+        });
+    }
+
+
+
+    window.closeSidebar = function () {
+      document.getElementById("mySidebar").style.left = "-290px";
+    };
+
+  </script>
+  <div id="moveModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Move To Folder</h2>
+        <button class="close-modal" onclick="closeMoveModal()">×</button>
+      </div>
+      <div class="form-group">
+        <label>Select Destination Folder</label>
+        <select id="moveDestination" class="form-control"></select>
+      </div>
+      <button class="btn btn-primary" onclick="confirmMove()">Move</button>
+    </div>
+  </div>
+
+</body>
+
+</html>
